@@ -1,0 +1,6 @@
+pip install flask flask-sqlalchemy flask-migrate flask-cors python-dotenv
+pip install flask-jwt-extended werkzeug passlib[bcrypt]
+pip install psycopg2-binary
+pip install marshmallow flask-marshmallow
+pip install pytest pytest-flask
+pip install PyJWT
