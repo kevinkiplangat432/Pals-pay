@@ -1,14 +1,11 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy import func
 from backend.extensions import db
-from app.models import User, Transaction, Wallet, Beneficiary
+from app.models import User, Beneficiary
 from server.auth import token_required
-import re
+
 
 beneficiaries_bp = Blueprint('beneficiaries_bp', __name__, url_prefix='/api/beneficiaries')
-
-# Number should optionally start with + and country code, followed by 10 to 12 digits or just 10 digits
-PHONE_REGEX = r'^\+?1?\d{10,12}$'
 
 
 @beneficiaries_bp.route('/user/beneficiaries', methods=['GET'])
@@ -23,59 +20,72 @@ def get_beneficiaries():
 def create_beneficiary():
     """
     Body: 
-    External:{"name": "John Doe", "phonenumber": "+2547XXXXXXXX"} (outside registered users)
-    Internal:{"name": "Jane Doe", "recipient_user_id": 2, "phonenumber": "+2547XXXXXXXX"} (registered users)
+    {"beneficiary_id": "2", "nickname": "John Doe"} 
     """
     user = request.current_user
     data = request.get_json()
 
-    name = data.get('name')
-    phonenumber = data.get('phonenumber')
-    recipient_user_id = data.get('recipient_user_id')
+    beneficiary_id = data.get('beneficiary_id')
+    nickname = data.get('nickname')
 
-    if not name:
-        return jsonify({'message': 'Name is required'}), 400
+    if beneficiary_id is None:
+        return jsonify({'message': 'beneficiary_id is required'}), 400
+    
+    if int(beneficiary_id) == user.id:
+        return jsonify({'message': 'Cannot add yourself as a beneficiary'}), 400
+    
+    beneficiary_user = User.query.get(beneficiary_id)
+    if not beneficiary_user:
+        return jsonify({'message': 'Beneficiary user not found'}), 404
 
-    if recipient_user_id:
-        # Internal beneficiary
+    beneficiary = Beneficiary(
+        user_id=user.id,
+        beneficiary_id=beneficiary_id,
+        nickname=nickname
 
-        if not re.match(PHONE_REGEX, phonenumber):
-            return jsonify({'message': 'Invalid phone number format Use format +2547XXXXXXXX'}), 400
-        
-        recipient = User.query.get(recipient_user_id)
-        if not recipient:
-            return jsonify({'message': 'Recipient user not found'}), 404
-
-        existing = Beneficiary.query.filter_by(user_id=user.id, recipient_user_id=recipient_user_id).first()
-        if existing:
-            return jsonify({'message': 'Beneficiary already exists'}), 400
-
-        beneficiary = Beneficiary(
-            user_id=user.id,
-            name=name,
-            recipient_user_id=recipient_user_id
         )
-    elif phonenumber:
-        # External beneficiary
-        if not re.match(PHONE_REGEX, phonenumber):
-            return jsonify({'message': 'Invalid phone number format Use format +2547XXXXXXXX'}), 400
-
-        existing = Beneficiary.query.filter_by(user_id=user.id, phonenumber=phonenumber).first()
-        if existing:
-            return jsonify({'message': 'Beneficiary already exists'}), 400
-
-        beneficiary = Beneficiary(
-            user_id=user.id,
-            name=name,
-            phonenumber=phonenumber
-        )
-    else:
-        return jsonify({'message': 'Either recipient_user_id or phonenumber is required'}), 400
-
+    
     db.session.add(beneficiary)
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Beneficiary added successfully', 'beneficiary': beneficiary.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'An error occurred while adding beneficiary', 'error': str(e)}), 500
+
+    
+@beneficiaries_bp.route('/user/beneficiaries/<int:beneficiary_record_id>', methods=['PUT'])
+@token_required
+def update_beneficiary(beneficiary_record_id):
+    
+    user = request.current_user
+    beneficiary = Beneficiary.query.filter_by(id=beneficiary_record_id, user_id=user.id).first()
+
+    if not beneficiary:
+        return jsonify({ 'error': 'Beneficiary not found' }), 404
+    
+    data = request.get_json()
+
+    if 'nickname' in data:
+        beneficiary.nickname = data['nickname']
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Beneficiary updated successfully', 'beneficiary': beneficiary.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'An error occurred while updating beneficiary', 'error': str(e)}), 500
+    
+@beneficiaries_bp.route('/user/beneficiaries/<int:beneficiary_record_id>', methods=['DELETE'])
+@token_required
+def delete_beneficiary(beneficiary_record_id):
+    user = request.current_user
+    beneficiary = Beneficiary.query.filter_by(id=beneficiary_id, user_id=user.id).first()
+    if not beneficiary:
+        return jsonify({ 'error': 'Beneficiary not found' }), 404
+
+    db.session.delete(beneficiary)
     db.session.commit()
 
-    return jsonify( {"message": "Beneficiary created successfully", "beneficiary": beneficiary.to_dict()}), 201
-
-
-
+    return jsonify({'message': 'Beneficiary deleted successfully'}), 200
