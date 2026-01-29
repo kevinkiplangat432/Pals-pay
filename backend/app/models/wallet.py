@@ -2,7 +2,7 @@
 Wallet Model - Manages user balances and funds
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from extensions import db
 
@@ -18,8 +18,8 @@ class Wallet(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), unique=True, nullable=False)
     balance = db.Column(db.Numeric(precision=10, scale=2), default=Decimal('0.00'), nullable=False)
     currency = db.Column(db.String(3), default='USD', nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
     
     def to_dict(self):
         """

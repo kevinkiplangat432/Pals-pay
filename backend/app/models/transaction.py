@@ -2,7 +2,7 @@
 Transaction Model - Records all money movements
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 import uuid
 from extensions import db
@@ -40,7 +40,7 @@ class Transaction(db.Model):
     description = db.Column(db.Text, nullable=True)
     
     # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     completed_at = db.Column(db.DateTime, nullable=True)
     
     # Constraints

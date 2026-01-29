@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+t #!/usr/bin/env python3
 """
 Database management CLI
 Usage: python manage.py [command]
