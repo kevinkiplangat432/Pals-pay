@@ -77,7 +77,8 @@ def get_all_transactions():
             "user_id": tx.user_id,
             "amount": float(tx.amount),
             "type": tx.type,
-            "status": tx.status,
+            "status": tx.status,(No title)
+
             "timestamp": tx.timestamp
         })
 
