@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from sqlalchemy import func
+from decimal import Decimal
 from backend.extensions import db
 from app.models import Transaction, Wallet
 from server.auth import token_required
@@ -41,7 +41,7 @@ def add_funds():
         return jsonify({'message': 'Amount is required'}), 400
     
     try:
-        amount = float(amount)
+        amount = Decimal(str(amount))
         if amount <= 0:
             return jsonify({'message': 'Amount must be positive'}), 400
     except ValueError:
