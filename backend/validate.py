@@ -7,6 +7,9 @@ import py_compile
 import os
 import sys
 
+# Get the directory where this script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
 files_to_check = [
     'app.py',
     'config.py',
@@ -24,8 +27,9 @@ print("Validating Python files...\n")
 
 all_valid = True
 for file in files_to_check:
+    filepath = os.path.join(script_dir, file)
     try:
-        py_compile.compile(file, doraise=True)
+        py_compile.compile(filepath, doraise=True)
         print(f"✓ {file}")
     except py_compile.PyCompileError as e:
         print(f"✗ {file}: {e}")

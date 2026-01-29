@@ -2,7 +2,7 @@
 Beneficiary Model - Saves frequent recipients for quick access
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from extensions import db
 
 
@@ -23,7 +23,7 @@ class Beneficiary(db.Model):
     nickname = db.Column(db.String(50), nullable=True)
     
     # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     
     # Relationships
     beneficiary_user = db.relationship(
