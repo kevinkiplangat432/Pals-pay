@@ -141,7 +141,7 @@ def test_models():
         assert deleted_wallet is None, "Wallet not cascade deleted"
         print("   ✓ Cascade delete working")
         
-        print("\n✅ All tests passed!\n")
+        print("\nAll tests passed!\n")
         
         # Cleanup
         db.drop_all()

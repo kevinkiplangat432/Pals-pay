@@ -16,3 +16,6 @@ build/
 *.sqlite
 *.sqlite3
 .DS_Store
+.env
+.env.local
+.env.*.local
