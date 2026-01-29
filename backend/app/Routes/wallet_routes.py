@@ -14,11 +14,11 @@ def wallet_summary():
     user = request.current_user
     wallet = Wallet.query.filter_by(user_id=user.id).first()
     if not wallet:
-        wallet = Wallet(user_id=user.id, balance=0)
+        wallet = Wallet(user_id=user.id)
         db.session.add(wallet)
         db.session.commit()
 
-    return jsonify({'balance': float(wallet.balance)}), 200
+    return jsonify((wallet.to_dict())), 200
 
 @wallet_bp.route('/user/wallet/add-funds', methods=['POST'])
 @token_required
@@ -37,11 +37,13 @@ def add_funds():
     source = data.get('source')
     note = data.get('note', '')
 
-    if not amount or amount <= 0:
-        return jsonify({'message': 'Invalid amount'}), 400
+    if not amount :
+        return jsonify({'message': 'Amount is required'}), 400
     
     try:
         amount = float(amount)
+        if amount <= 0:
+            return jsonify({'message': 'Amount must be positive'}), 400
     except ValueError:
         return jsonify({'message': 'Amount must be a number'}), 400
     
@@ -52,17 +54,19 @@ def add_funds():
         with db.session.begin():
             wallet = (db.session.query(Wallet).filter(Wallet.user_id == user.id).with_for_update().one_or_none())
             if not wallet:
-                wallet = Wallet(user_id=user.id, balance=0)
+                wallet = Wallet(user_id=user.id)
                 db.session.add(wallet)
                 db.session.flush()  # Save for now don't make permanent
 
-                wallet.balance = (wallet.balance or 0) + amount
+                wallet.balance += amount
             transaction = Transaction(
-                user_id=user.id,
-                type='topup',
+                sender_id=None,
+                receiver_id=user.id,
+                transaction_type='deposit',
                 amount=amount,
                 source=source,
-                note=note
+                note=note,
+                status= 'completed'
             )
             db.session.add(transaction)
 
@@ -83,28 +87,6 @@ def wallet_analytics():
         db.session.add(wallet)
         db.session.commit()
     
-    # Calculate total money that entered the wallet
-    total_in = db.session.query(
-        func.coalesce(func.sum(Transaction.amount), 0.0)
-    ).filter(
-        Transaction.recipient_user_id == user.id,
-        Transaction.status == 'success',
-        Transaction.type.in_(['topup', 'transfer'])
-    ).scalar() # return single value
-
-    # Calculate total money that left the wallet
-    total_out = db.session.query(
-        func.coalesce(func.sum(Transaction.amount), 0.0)
-    ).filter(
-        Transaction.user_id == user.id,
-        Transaction.status == 'success',
-        Transaction.type.in_(['transfer'])
-    ).scalar() # return single value
-
-    return jsonify({
-        'balance': float(wallet.balance),
-        'total_in': float(total_in),
-        'total_out': float(total_out)
-    }), 200
+    return jsonify(wallet.get_analytics()), 200
 
 
