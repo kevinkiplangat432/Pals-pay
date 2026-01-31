@@ -3,7 +3,7 @@ from functools import wraps
 from flask import request, jsonify, current_app
 from app.models import User
 
-
+# Decorator to check for valid JWT token
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):

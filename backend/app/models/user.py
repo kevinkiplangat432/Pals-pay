@@ -38,6 +38,12 @@ class User(db.Model):
     # Relationships
     wallet = db.relationship('Wallet', backref='user', uselist=False, cascade='all, delete-orphan')
     
+    #reset password with otp
+    reset_otp = db.Column(db.String(255), nullable=True)  #store hashed otp
+    reset_otp_expiration = db.Column(db.DateTime, nullable=True)  #otp expiration time
+    reset_otp_used = db.Column(db.Boolean, default=False, nullable=False)  #flag to check if otp is used
+
+
     sent_transactions = db.relationship(
         'Transaction',
         foreign_keys='Transaction.sender_id',
