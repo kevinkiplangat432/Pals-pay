@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy import func
-# from server.extensions import db
-# from server.models import User, Transaction, Wallet, Beneficiary
+from backend.extensions import db
+from app.models import User
 from server.auth import token_required
 import re
 
@@ -64,103 +64,3 @@ def change_pin():
 
     return jsonify({'message': 'Pin updated successfully'}), 200
 
-# WALLET
-
-@user_bp.route('/user/wallet', methods=['GET'])
-@token_required
-def wallet_summary():
-    user = request.current_user
-    wallet = Wallet.query.filter_by(user_id=user.id).first()
-    if not wallet:
-        wallet = Wallet(user_id=user.id, balance=0)
-        db.session.add(wallet)
-        db.session.commit()
-
-    return jsonify({'balance': float(wallet.balance)}), 200
-
-@user_bp.route('/user/wallet/add-funds', methods=['POST'])
-@token_required
-def add_funds():
-    """
-    Body: {"amount": 1000, "source": "mpesa|card|bank", "note": "optional"}
-    Postgres-safe:
-    -lock wallet row for update(one update at a time)
-    -update balance
-    -create transaction (topup, has to make a transaction not just update balance)
-    """
-
-    user = request.current_user
-    data = request.get_json()
-    amount = data.get('amount')
-    source = data.get('source')
-    note = data.get('note', '')
-
-    if not amount or amount <= 0:
-        return jsonify({'message': 'Invalid amount'}), 400
-    
-    try:
-        amount = float(amount)
-    except ValueError:
-        return jsonify({'message': 'Amount must be a number'}), 400
-    
-    if source not in ['mpesa', 'card', 'bank']:
-        return jsonify({'message': 'Invalid source'}), 400
-
-    try:
-        with db.session.begin():
-            wallet = (db.session.query(Wallet).filter(Wallet.user_id == user.id).with_for_update().one_or_none())
-            if not wallet:
-                wallet = Wallet(user_id=user.id, balance=0)
-                db.session.add(wallet)
-                db.session.flush()  # Save for now don't make permanent
-
-                wallet.balance = (wallet.balance or 0) + amount
-            transaction = Transaction(
-                user_id=user.id,
-                type='topup',
-                amount=amount,
-                source=source,
-                note=note
-            )
-            db.session.add(transaction)
-
-        return jsonify({'message': 'Funds added successfully', 'new_balance': float(wallet.balance)}), 200
-    
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'message': 'An error occurred while adding funds', 'error': str(e)}), 500
-    
-@user_bp.route('/user/wallet/analytics', methods=['GET'])
-@token_required
-def wallet_analytics():
-    user = request.current_user
-
-    wallet = Wallet.query.filter_by(user_id=user.id).first()
-    if not wallet:
-        wallet = Wallet(user_id=user.id, balance=0)
-        db.session.add(wallet)
-        db.session.commit()
-    
-    # Calculate total money that entered the wallet
-    total_in = db.session.query(
-        func.coalesce(func.sum(Transaction.amount), 0.0)
-    ).filter(
-        Transaction.recipient_user_id == user.id,
-        Transaction.status == 'success',
-        Transaction.type.in_(['topup', 'transfer'])
-    ).scalar() # return single value
-
-    # Calculate total money that left the wallet
-    total_out = db.session.query(
-        func.coalesce(func.sum(Transaction.amount), 0.0)
-    ).filter(
-        Transaction.user_id == user.id,
-        Transaction.status == 'success',
-        Transaction.type.in_(['transfer'])
-    ).scalar() # return single value
-
-    return jsonify({
-        'balance': float(wallet.balance),
-        'total_in': float(total_in),
-        'total_out': float(total_out)
-    }), 200
