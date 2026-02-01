@@ -1,16 +1,9 @@
-"""
-Payment Method Model - Stores user payment methods (MPesa, bank, card)
-"""
 from datetime import datetime, timezone
 from extensions import db
 from .enums import PaymentProvider
 
 
 class PaymentMethod(db.Model):
-    """
-    Payment method model for storing user payment options
-    Daraja-ready with MPesa integration
-    """
     __tablename__ = 'payment_methods'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -60,7 +53,6 @@ class PaymentMethod(db.Model):
     )
     
     def set_as_default(self):
-        """Set this payment method as default for user"""
         # First, unset any existing default
         PaymentMethod.query.filter_by(
             user_id=self.user_id, 
@@ -71,20 +63,10 @@ class PaymentMethod(db.Model):
         return self
     
     def mark_as_used(self):
-        """Update last used timestamp"""
         self.last_used_at = datetime.now(timezone.utc)
         return self
     
     def verify(self, token=None):
-        """
-        Verify the payment method
-        
-        Args:
-            token (str): Verification token if required
-            
-        Returns:
-            bool: Success status
-        """
         if token and self.verification_token != token:
             return False
         
@@ -94,15 +76,6 @@ class PaymentMethod(db.Model):
         return True
     
     def to_dict(self, include_sensitive=False):
-        """
-        Serialize payment method for API responses
-        
-        Args:
-            include_sensitive (bool): Include sensitive data like full account numbers
-            
-        Returns:
-            dict: Payment method data
-        """
         data = {
             'id': self.id,
             'user_id': self.user_id,
@@ -136,21 +109,18 @@ class PaymentMethod(db.Model):
     
     @staticmethod
     def _mask_phone_number(phone):
-        """Mask phone number for display"""
         if len(phone) >= 10:
             return phone[:4] + '*' * (len(phone) - 6) + phone[-2:]
         return phone
     
     @staticmethod
     def _mask_account_number(account):
-        """Mask account number for display"""
         if len(account) >= 4:
             return '*' * (len(account) - 4) + account[-4:]
         return account
     
     @staticmethod
     def _mask_card_number(card):
-        """Mask card number for display"""
         if len(card) >= 4:
             return '**** **** **** ' + card[-4:]
         return card

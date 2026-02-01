@@ -1,16 +1,9 @@
-"""
-Ledger Entry Model - Double-entry accounting for wallet transactions
-"""
 from datetime import datetime, timezone
 from decimal import Decimal
 from extensions import db
 
 
 class LedgerEntry(db.Model):
-    """
-    Ledger entry model for double-entry accounting
-    Every transaction creates two ledger entries (debit and credit)
-    """
     __tablename__ = 'ledger_entries'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -54,15 +47,6 @@ class LedgerEntry(db.Model):
     
     @classmethod
     def create_entries(cls, transaction):
-        """
-        Create ledger entries for a transaction
-        
-        Args:
-            transaction (Transaction): The transaction to create entries for
-            
-        Returns:
-            tuple: (debit_entry, credit_entry) or (None, None) if failed
-        """
         from .wallet import Wallet
         
         if not transaction.sender_wallet_id and not transaction.receiver_wallet_id:
@@ -113,7 +97,6 @@ class LedgerEntry(db.Model):
         return entries
     
     def to_dict(self):
-        """Serialize ledger entry for API responses"""
         return {
             'id': self.id,
             'wallet_id': self.wallet_id,
