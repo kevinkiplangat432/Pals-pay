@@ -1,6 +1,4 @@
-"""
-Wallet Model - Manages user balances and funds with ledger-based accounting
-"""
+
 from datetime import datetime, timezone
 from decimal import Decimal
 from extensions import db
@@ -8,10 +6,7 @@ from .enums import WalletStatus
 
 
 class Wallet(db.Model):
-    """
-    Wallet model with explicit ledger-based accounting
-    Balance should be derived from ledger entries, not manipulated directly
-    """
+ 
     __tablename__ = 'wallets'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -68,10 +63,6 @@ class Wallet(db.Model):
     )
     
     def update_balance_from_ledger(self):
-        """
-        Recalculates balance from ledger entries
-        Should be called after ledger changes
-        """
         from .ledger_entry import LedgerEntry
         
         # Get the latest ledger entry
@@ -84,15 +75,6 @@ class Wallet(db.Model):
             self.available_balance = Decimal('0.00')
     
     def can_withdraw(self, amount):
-        """
-        Checks if withdrawal is allowed
-        
-        Args:
-            amount (Decimal): Amount to withdraw
-            
-        Returns:
-            dict: {'allowed': bool, 'reason': str}
-        """
         amount = Decimal(str(amount))
         
         if self.status != WalletStatus.active:
@@ -111,15 +93,6 @@ class Wallet(db.Model):
         return {'allowed': True, 'reason': 'OK'}
     
     def lock_funds(self, amount):
-        """
-        Locks funds for pending transaction
-        
-        Args:
-            amount (Decimal): Amount to lock
-            
-        Returns:
-            bool: Success status
-        """
         amount = Decimal(str(amount))
         
         if amount > self.available_balance:
@@ -130,15 +103,6 @@ class Wallet(db.Model):
         return True
     
     def unlock_funds(self, amount):
-        """
-        Unlocks previously locked funds
-        
-        Args:
-            amount (Decimal): Amount to unlock
-            
-        Returns:
-            bool: Success status
-        """
         amount = Decimal(str(amount))
         
         if amount > self.locked_balance:
@@ -149,12 +113,7 @@ class Wallet(db.Model):
         return True
     
     def to_dict(self):
-        """
-        Returns wallet data for API responses
-        
-        Returns:
-            dict: Wallet data dictionary
-        """
+
         return {
             'id': self.id,
             'user_id': self.user_id,

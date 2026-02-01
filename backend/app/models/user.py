@@ -1,7 +1,4 @@
-"""
-User Model - Core user authentication and profile model
-Production-grade with KYC integration
-"""
+
 from datetime import datetime, timezone
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.dialects.postgresql import UUID
@@ -11,10 +8,7 @@ from .enums import KYCStatus
 
 
 class User(db.Model):
-    """
-    User model for authentication and profile management
-    Enhanced for production with audit trails and KYC
-    """
+   
     __tablename__ = 'users'
     
     # Identity fields
@@ -83,37 +77,16 @@ class User(db.Model):
             self.kyc_verification = KYCVerification()
     
     def set_password(self, password):
-        """
-        Hashes and stores password securely using bcrypt
-        
-        Args:
-            password (str): Plain text password
-        """
+    
         self.password_hash = generate_password_hash(password)
     
     def check_password(self, password):
-        """
-        Validates login credentials
-        
-        Args:
-            password (str): Plain text password to verify
-            
-        Returns:
-            bool: True if password matches, False otherwise
-        """
         return check_password_hash(self.password_hash, password)
     
     def get_full_name(self):
-        """Returns user's full name"""
         return f"{self.first_name} {self.last_name}"
     
     def can_transact(self, amount=0):
-        """
-        Checks if user is allowed to perform transactions
-        
-        Returns:
-            dict: {'allowed': bool, 'reason': str}
-        """
         if not self.is_active:
             return {'allowed': False, 'reason': 'Account is inactive'}
         
@@ -126,16 +99,6 @@ class User(db.Model):
         return {'allowed': True, 'reason': 'OK'}
     
     def to_dict(self, include_wallet=False, include_kyc=False):
-        """
-        Serializes user data for API responses
-        
-        Args:
-            include_wallet (bool): Whether to include wallet data
-            include_kyc (bool): Whether to include KYC data
-            
-        Returns:
-            dict: User data dictionary
-        """
         data = {
             'id': self.id,
             'public_id': str(self.public_id),

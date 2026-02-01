@@ -8,10 +8,6 @@ from .enums import TransactionStatus, TransactionType, PaymentProvider
 
 
 class Transaction(db.Model):
-    """
-    Transaction model with idempotency keys and provider integration
-    Production-grade with support for external providers like Daraja
-    """
     __tablename__ = 'transactions'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -116,16 +112,6 @@ class Transaction(db.Model):
     
     @staticmethod
     def calculate_fee(amount, transaction_type='transfer'):
-        """
-        Calculate transaction fee based on type and amount
-        
-        Args:
-            amount (Decimal or float): Transaction amount
-            transaction_type (str): Type of transaction
-            
-        Returns:
-            Decimal: Calculated fee
-        """
         amount = Decimal(str(amount))
         
         # Fee structure (customize as needed)
@@ -148,16 +134,6 @@ class Transaction(db.Model):
         return fee.quantize(Decimal('0.01'))
     
     def update_status(self, new_status, metadata=None):
-        """
-        Safely update transaction status with timestamp
-        
-        Args:
-            new_status (TransactionStatus): New status
-            metadata (dict): Additional metadata to store
-            
-        Returns:
-            bool: Success status
-        """
         valid_transitions = {
             TransactionStatus.pending: [TransactionStatus.processing, TransactionStatus.failed],
             TransactionStatus.processing: [TransactionStatus.completed, TransactionStatus.failed],
@@ -192,16 +168,6 @@ class Transaction(db.Model):
         return True
     
     def to_dict(self, include_wallets=True, include_ledger=False):
-        """
-        Serializes transaction data for API responses
-        
-        Args:
-            include_wallets (bool): Whether to include wallet details
-            include_ledger (bool): Whether to include ledger entries
-            
-        Returns:
-            dict: Transaction data dictionary
-        """
         data = {
             'id': self.id,
             'sender_wallet_id': self.sender_wallet_id,
