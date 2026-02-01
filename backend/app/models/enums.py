@@ -1,12 +1,8 @@
-"""
-Enums for PostgreSQL ENUM types
-Better than string checks, improves performance and data integrity
-"""
 import enum
 
 
 class TransactionStatus(enum.Enum):
-    """Transaction lifecycle states"""
+    #Transaction lifecycle states
     pending = "pending"
     processing = "processing"
     completed = "completed"
@@ -15,7 +11,7 @@ class TransactionStatus(enum.Enum):
 
 
 class TransactionType(enum.Enum):
-    """Types of financial transactions"""
+    #Types of financial transactions
     transfer = "transfer"
     deposit = "deposit"
     withdrawal = "withdrawal"
@@ -23,7 +19,7 @@ class TransactionType(enum.Enum):
 
 
 class KYCStatus(enum.Enum):
-    """KYC verification states"""
+    #KYC verification states
     unverified = "unverified"
     pending = "pending"
     verified = "verified"
@@ -31,7 +27,7 @@ class KYCStatus(enum.Enum):
 
 
 class WalletStatus(enum.Enum):
-    """Wallet operational states"""
+    #Wallet operational states
     active = "active"
     frozen = "frozen"
     suspended = "suspended"
@@ -39,7 +35,7 @@ class WalletStatus(enum.Enum):
 
 
 class PaymentProvider(enum.Enum):
-    """Payment service providers"""
+    #Payment service providers
     internal = "internal"
     mpesa = "mpesa"
     bank = "bank"
@@ -47,7 +43,7 @@ class PaymentProvider(enum.Enum):
 
 
 class DocumentType(enum.Enum):
-    """Supported KYC document types"""
+    #Supported KYC document types
     national_id = "national_id"
     passport = "passport"
     driver_license = "driver_license"

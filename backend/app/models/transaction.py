@@ -1,6 +1,4 @@
-"""
-Transaction Model - Records all money movements with idempotency support
-"""
+
 from datetime import datetime, timezone
 from decimal import Decimal
 import uuid

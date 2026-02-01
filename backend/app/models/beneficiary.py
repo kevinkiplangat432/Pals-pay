@@ -1,16 +1,9 @@
-"""
-Beneficiary Model - Saves frequent recipients for quick access
-Enhanced with transaction statistics and limits
-"""
 from datetime import datetime, timezone
 from extensions import db
 
 
 class Beneficiary(db.Model):
-    """
-    Beneficiary model for saving frequent recipients
-    Enhanced with usage statistics and transfer limits
-    """
+
     __tablename__ = 'beneficiaries'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -62,12 +55,6 @@ class Beneficiary(db.Model):
     )
     
     def update_statistics(self, amount):
-        """
-        Update beneficiary statistics after a transfer
-        
-        Args:
-            amount (Decimal): Transfer amount
-        """
         from decimal import Decimal
         
         self.total_transfers += 1
@@ -75,15 +62,6 @@ class Beneficiary(db.Model):
         self.last_transfer_at = datetime.now(timezone.utc)
     
     def can_send(self, amount):
-        """
-        Check if transfer to this beneficiary is allowed
-        
-        Args:
-            amount (Decimal): Amount to transfer
-            
-        Returns:
-            dict: {'allowed': bool, 'reason': str}
-        """
         from decimal import Decimal
         
         amount = Decimal(str(amount))
@@ -99,12 +77,6 @@ class Beneficiary(db.Model):
         return {'allowed': True, 'reason': 'OK'}
     
     def to_dict(self, include_user=True):
-        """
-        Returns beneficiary info with wallet and user details
-        
-        Returns:
-            dict: Beneficiary data dictionary
-        """
         data = {
             'id': self.id,
             'user_id': self.user_id,

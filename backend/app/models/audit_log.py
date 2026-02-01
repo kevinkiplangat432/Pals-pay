@@ -1,16 +1,9 @@
-"""
-Audit Log Model - Tracks all system actions for security and analytics
-"""
 from datetime import datetime, timezone
 from sqlalchemy.dialects.postgresql import JSONB
 from extensions import db
 
 
 class AuditLog(db.Model):
-    """
-    Audit log model for tracking all system actions
-    Critical for security, fraud detection, and AI analytics
-    """
     __tablename__ = 'audit_logs'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -42,7 +35,7 @@ class AuditLog(db.Model):
     
     
     # Status
-    status = db.Column(db.String(20), nullable=False, default='success')  # 'success', 'failed'
+    status = db.Column(db.String(20), nullable=False, default='success') 
     error_message = db.Column(db.Text, nullable=True)
     
     # Timestamps
@@ -59,34 +52,13 @@ class AuditLog(db.Model):
     
     @classmethod
     def log(cls, **kwargs):
-        """
-        Create an audit log entry
-        
-        Args:
-            **kwargs: Audit log attributes
-            
-        Returns:
-            AuditLog: Created audit log entry
-        """
         log = cls(**kwargs)
         db.session.add(log)
         return log
     
     @classmethod
     def log_user_action(cls, actor_id, action, resource_type, resource_id=None, **kwargs):
-        """
-        Log a user action
-        
-        Args:
-            actor_id (int): User ID performing the action
-            action (str): Action being performed
-            resource_type (str): Type of resource being acted upon
-            resource_id (int): ID of the resource
-            **kwargs: Additional attributes
-            
-        Returns:
-            AuditLog: Created audit log entry
-        """
+
         return cls.log(
             actor_id=actor_id,
             actor_type='user',
@@ -98,19 +70,6 @@ class AuditLog(db.Model):
     
     @classmethod
     def log_admin_action(cls, actor_id, action, resource_type, resource_id=None, **kwargs):
-        """
-        Log an admin action
-        
-        Args:
-            actor_id (int): Admin user ID
-            action (str): Action being performed
-            resource_type (str): Type of resource being acted upon
-            resource_id (int): ID of the resource
-            **kwargs: Additional attributes
-            
-        Returns:
-            AuditLog: Created audit log entry
-        """
         return cls.log(
             actor_id=actor_id,
             actor_type='admin',
@@ -122,18 +81,6 @@ class AuditLog(db.Model):
     
     @classmethod
     def log_system_action(cls, action, resource_type, resource_id=None, **kwargs):
-        """
-        Log a system-generated action
-        
-        Args:
-            action (str): System action
-            resource_type (str): Type of resource being acted upon
-            resource_id (int): ID of the resource
-            **kwargs: Additional attributes
-            
-        Returns:
-            AuditLog: Created audit log entry
-        """
         return cls.log(
             actor_type='system',
             action=action,
@@ -143,7 +90,6 @@ class AuditLog(db.Model):
         )
     
     def to_dict(self):
-        """Serialize audit log for API responses"""
         return {
             'id': self.id,
             'actor_id': self.actor_id,

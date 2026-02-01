@@ -8,7 +8,6 @@ from .ledger_entry import LedgerEntry
 from .audit_log import AuditLog
 from .enums import *
 
-# Export all models
 __all__ = [
     'User',
     'Wallet',

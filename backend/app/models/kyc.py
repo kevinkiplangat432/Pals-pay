@@ -1,15 +1,9 @@
-"""
-KYC Model - Know Your Customer verification records
-"""
 from datetime import datetime, timezone
 from extensions import db
 from .enums import KYCStatus, DocumentType
 
 
 class KYCVerification(db.Model):
-    """
-    KYC verification model for regulatory compliance
-    """
     __tablename__ = 'kyc_verifications'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -74,7 +68,6 @@ class KYCVerification(db.Model):
             self.user.kyc_status = KYCStatus.verified
     
     def reject(self, reason):
-        """Reject KYC verification"""
         self.status = KYCStatus.rejected
         self.rejection_reason = reason
         self.verified_at = datetime.now(timezone.utc)
@@ -84,13 +77,11 @@ class KYCVerification(db.Model):
             self.user.kyc_status = KYCStatus.rejected
     
     def is_expired(self):
-        """Check if KYC verification has expired"""
         if not self.expires_at:
             return False
         return datetime.now(timezone.utc) > self.expires_at
     
     def to_dict(self):
-        """Serialize KYC data for API responses"""
         return {
             'id': self.id,
             'user_id': self.user_id,
