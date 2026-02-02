@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from sqlalchemy.dialects.postgresql import JSONB
-from extensions import db
+from ..extensions import db
 
 
 class AuditLog(db.Model):

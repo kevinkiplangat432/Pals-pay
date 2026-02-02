@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
-from extensions import db
+from ..extensions import db
 from .enums import KYCStatus
 
 

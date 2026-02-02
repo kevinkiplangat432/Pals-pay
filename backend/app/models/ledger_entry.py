@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from decimal import Decimal
-from extensions import db
+from ..extensions import db
 
 
 class LedgerEntry(db.Model):

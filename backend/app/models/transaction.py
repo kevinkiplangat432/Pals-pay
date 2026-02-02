@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
-from extensions import db
+from ..extensions import db
 from .enums import TransactionStatus, TransactionType, PaymentProvider
 
 
@@ -60,7 +60,7 @@ class Transaction(db.Model):
     
     # Metadata
     description = db.Column(db.Text, nullable=True)
-    metadata = db.Column(db.JSON, nullable=True)  # For storing provider-specific data
+    meta_info = db.Column(db.JSON, nullable=True)  # For storing provider-specific data
     
     # Timestamps
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)

@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime, timedelta
 import jwt
-from app.models import User
-from extensions import db
+from ..models.user import User
+from ..extensions import db
 from app.auth.decorators import token_required
 
 

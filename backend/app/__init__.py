@@ -5,9 +5,8 @@ from logging.handlers import RotatingFileHandler
 import os
 from datetime import datetime
 import uuid
-
 from config import config
-from extensions import db, bcrypt, cors, migrate, jwt
+from .extensions import db, bcrypt, cors, migrate, jwt
 
 def create_app(config_name='default'):
     """Application factory pattern"""
