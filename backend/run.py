@@ -1,2 +1,6 @@
-from app.auth.routes import auth_bp
-app.register_blueprint(auth_bp)
+from app import create_app
+
+app = create_app()
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
