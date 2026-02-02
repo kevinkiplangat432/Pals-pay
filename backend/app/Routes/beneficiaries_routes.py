@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from sqlalchemy import func
 from backend.extensions import db
 from app.models import User, Beneficiary
-from server.auth import token_required
+from app.auth import token_required
 
 
 beneficiaries_bp = Blueprint('beneficiaries_bp', __name__, url_prefix='/api/beneficiaries')
@@ -18,10 +18,6 @@ def get_beneficiaries():
 @beneficiaries_bp.route('/user/beneficiaries', methods=['POST'])
 @token_required
 def create_beneficiary():
-    """
-    Body: 
-    {"beneficiary_id": "2", "nickname": "John Doe"} 
-    """
     user = request.current_user
     data = request.get_json()
 

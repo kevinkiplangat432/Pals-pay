@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from decimal import Decimal
 from backend.extensions import db
 from app.models import Transaction, Wallet
-from server.auth import token_required
+from app.auth import token_required
 import re
 
 wallet_bp = Blueprint('wallet_bp', __name__, url_prefix='/api/wallet')
@@ -23,14 +23,6 @@ def wallet_summary():
 @wallet_bp.route('/user/wallet/add-funds', methods=['POST'])
 @token_required
 def add_funds():
-    """
-    Body: {"amount": 1000, "source": "mpesa|card|bank", "note": "optional"}
-    Postgres-safe:
-    -lock wallet row for update(one update at a time)
-    -update balance
-    -create transaction (topup, has to make a transaction not just update balance)
-    """
-
     user = request.current_user
     data = request.get_json()
     amount = data.get('amount')
