@@ -1,151 +1,365 @@
-"""
-Test Models
-Simple tests to verify model functionality
-"""
-
-import sys
-import os
-
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from app import create_app
-from extensions import db
-from models import User, Wallet, Transaction, Beneficiary
+import pytest
 from decimal import Decimal
+from datetime import datetime, timedelta
+from app.models import User, Wallet, Transaction, Beneficiary, KYCVerification, PaymentMethod, LedgerEntry, AuditLog
+from app.models.enums import TransactionStatus, TransactionType, KYCStatus, WalletStatus, PaymentProvider, DocumentType
 
-
-def test_models():
-    """Test all models"""
-    app = create_app('testing')
+class TestUserModel:
+    """Test User model"""
     
-    with app.app_context():
-        # Create tables
-        db.drop_all()
-        db.create_all()
-        
-        print("Testing Models...\n")
-        
-        # Test User Model
-        print("1. Testing User Model...")
-        user1 = User(
+    def test_create_user(self, db_session):
+        """Test creating a new user"""
+        user = User(
             email='test@example.com',
             username='testuser',
             phone_number='+254700000000',
             first_name='Test',
             last_name='User'
         )
-        user1.set_password('testpass123')
-        db.session.add(user1)
-        db.session.commit()
+        user.set_password('password123')
         
-        # Verify password hashing
-        assert user1.check_password('testpass123'), "Password check failed"
-        assert not user1.check_password('wrongpass'), "Wrong password accepted"
-        print("   ✓ User creation and password hashing works")
-        print(f"   ✓ User representation: {user1}")
+        db_session.add(user)
+        db_session.commit()
         
-        # Test Wallet Model
-        print("\n2. Testing Wallet Model...")
-        wallet = Wallet(user_id=user1.id, balance=Decimal('100.50'))
-        db.session.add(wallet)
-        db.session.commit()
-        
-        assert wallet.balance == Decimal('100.50'), "Wallet balance incorrect"
-        print(f"   ✓ Wallet created: {wallet}")
-        
-        # Test analytics
-        analytics = wallet.get_analytics()
-        assert analytics['current_balance'] == 100.50, "Analytics balance incorrect"
-        print("   ✓ Wallet analytics working")
-        
-        # Test Transaction Model
-        print("\n3. Testing Transaction Model...")
-        
-        # Create second user for transfers
-        user2 = User(
-            email='test2@example.com',
-            username='testuser2',
-            phone_number='+254700000001',
-            first_name='Test2',
-            last_name='User2'
+        assert user.id is not None
+        assert user.public_id is not None
+        assert user.check_password('password123')
+        assert user.is_admin == False
+        assert user.is_active == True
+        assert user.wallet is not None  # Wallet created automatically
+    
+    def test_user_full_name(self, db_session):
+        """Test user full name property"""
+        user = User(
+            email='test@example.com',
+            username='testuser',
+            phone_number='+254700000000',
+            first_name='John',
+            last_name='Doe'
         )
-        user2.set_password('testpass123')
-        db.session.add(user2)
         
-        wallet2 = Wallet(user_id=user2.id, balance=Decimal('50.00'))
-        db.session.add(wallet2)
-        db.session.commit()
+        assert user.get_full_name() == 'John Doe'
+    
+    def test_user_can_transact(self, db_session):
+        """Test user transaction permissions"""
+        user = User(
+            email='test@example.com',
+            username='testuser',
+            phone_number='+254700000000',
+            first_name='Test',
+            last_name='User',
+            kyc_status=KYCStatus.verified
+        )
+        user.set_password('password123')
+        db_session.add(user)
+        db_session.commit()
         
-        # Test fee calculation
-        fee = Transaction.calculate_fee(100)
-        assert fee == Decimal('1.00'), "Fee calculation incorrect for $100"
+        # Active, verified user can transact
+        result = user.can_transact()
+        assert result['allowed'] == True
         
-        fee_min = Transaction.calculate_fee(10)
-        assert fee_min == Decimal('0.50'), "Minimum fee not applied"
-        print("   ✓ Fee calculation working")
+        # Inactive user cannot transact
+        user.is_active = False
+        result = user.can_transact()
+        assert result['allowed'] == False
         
-        # Create transaction
+        # Unverified KYC cannot transact
+        user.is_active = True
+        user.kyc_status = KYCStatus.unverified
+        result = user.can_transact()
+        assert result['allowed'] == False
+
+class TestWalletModel:
+    """Test Wallet model"""
+    
+    def test_create_wallet(self, db_session, regular_user):
+        """Test creating a wallet"""
+        wallet = Wallet(
+            user_id=regular_user.id,
+            balance=Decimal('1000.00'),
+            available_balance=Decimal('900.00'),
+            locked_balance=Decimal('100.00')
+        )
+        
+        db_session.add(wallet)
+        db_session.commit()
+        
+        assert wallet.id is not None
+        assert wallet.currency == 'KES'
+        assert wallet.status == WalletStatus.active
+    
+    def test_wallet_can_withdraw(self, db_session, regular_user):
+        """Test wallet withdrawal permissions"""
+        wallet = regular_user.wallet
+        wallet.balance = Decimal('1000.00')
+        wallet.available_balance = Decimal('1000.00')
+        wallet.daily_limit = Decimal('5000.00')
+        
+        # Can withdraw valid amount
+        result = wallet.can_withdraw(Decimal('500.00'))
+        assert result['allowed'] == True
+        
+        # Cannot withdraw more than balance
+        result = wallet.can_withdraw(Decimal('1500.00'))
+        assert result['allowed'] == False
+        
+        # Cannot withdraw negative amount
+        result = wallet.can_withdraw(Decimal('-100.00'))
+        assert result['allowed'] == False
+        
+        # Cannot withdraw zero
+        result = wallet.can_withdraw(Decimal('0.00'))
+        assert result['allowed'] == False
+        
+        # Cannot withdraw if frozen
+        wallet.status = WalletStatus.frozen
+        result = wallet.can_withdraw(Decimal('100.00'))
+        assert result['allowed'] == False
+    
+    def test_wallet_lock_funds(self, db_session, regular_user):
+        """Test locking funds in wallet"""
+        wallet = regular_user.wallet
+        wallet.balance = Decimal('1000.00')
+        wallet.available_balance = Decimal('1000.00')
+        wallet.locked_balance = Decimal('0.00')
+        
+        # Lock funds
+        result = wallet.lock_funds(Decimal('300.00'))
+        assert result == True
+        assert wallet.available_balance == Decimal('700.00')
+        assert wallet.locked_balance == Decimal('300.00')
+        assert wallet.balance == Decimal('1000.00')  # Total unchanged
+        
+        # Cannot lock more than available
+        result = wallet.lock_funds(Decimal('800.00'))
+        assert result == False
+        
+        # Unlock funds
+        result = wallet.unlock_funds(Decimal('200.00'))
+        assert result == True
+        assert wallet.available_balance == Decimal('900.00')
+        assert wallet.locked_balance == Decimal('100.00')
+        
+        # Cannot unlock more than locked
+        result = wallet.unlock_funds(Decimal('200.00'))
+        assert result == False
+
+class TestTransactionModel:
+    """Test Transaction model"""
+    
+    def test_create_transaction(self, db_session, regular_user, second_user):
+        """Test creating a transaction"""
         transaction = Transaction(
-            sender_id=user1.id,
-            receiver_id=user2.id,
-            amount=Decimal('25.00'),
-            transaction_type='transfer',
-            status='completed',
-            transaction_fee=Transaction.calculate_fee(25),
-            description='Test transfer'
+            sender_wallet_id=regular_user.wallet.id,
+            receiver_wallet_id=second_user.wallet.id,
+            amount=Decimal('1000.00'),
+            fee=Decimal('10.00'),
+            net_amount=Decimal('990.00'),
+            transaction_type=TransactionType.transfer,
+            status=TransactionStatus.pending,
+            provider=PaymentProvider.internal,
+            description='Test transaction'
         )
-        db.session.add(transaction)
-        db.session.commit()
         
-        print(f"   ✓ Transaction created: {transaction}")
+        db_session.add(transaction)
+        db_session.commit()
         
-        # Test to_dict with user details
-        trans_dict = transaction.to_dict()
-        assert 'sender_username' in trans_dict, "Sender username not in dict"
-        assert trans_dict['sender_phone'] == user1.phone_number, "Phone number mismatch"
-        print("   ✓ Transaction serialization working")
+        assert transaction.id is not None
+        assert transaction.reference is not None
+        assert transaction.idempotency_key is not None
+        assert transaction.created_at is not None
+    
+    def test_transaction_fee_calculation(self):
+        """Test transaction fee calculation"""
+        # Transfer fee
+        fee = Transaction.calculate_fee(Decimal('1000.00'), 'transfer')
+        assert fee == Decimal('10.00')  # 1% of 1000, min 10
         
-        # Test Beneficiary Model
-        print("\n4. Testing Beneficiary Model...")
+        fee = Transaction.calculate_fee(Decimal('100.00'), 'transfer')
+        assert fee == Decimal('10.00')  # Minimum fee
+        
+        fee = Transaction.calculate_fee(Decimal('100000.00'), 'transfer')
+        assert fee == Decimal('1000.00')  # 1% of 100000 = 1000
+        
+        # Withdrawal fee
+        fee = Transaction.calculate_fee(Decimal('1000.00'), 'withdrawal')
+        assert fee == Decimal('27.50')  # Fixed fee
+        
+        # Deposit fee
+        fee = Transaction.calculate_fee(Decimal('1000.00'), 'deposit')
+        assert fee == Decimal('0.00')  # No fee
+    
+    def test_transaction_status_updates(self, db_session):
+        """Test transaction status updates"""
+        transaction = Transaction(
+            amount=Decimal('100.00'),
+            transaction_type=TransactionType.transfer,
+            status=TransactionStatus.pending
+        )
+        
+        # Valid transition: pending -> processing
+        result = transaction.update_status(TransactionStatus.processing)
+        assert result == True
+        assert transaction.status == TransactionStatus.processing
+        assert transaction.initiated_at is not None
+        
+        # Valid transition: processing -> completed
+        result = transaction.update_status(TransactionStatus.completed)
+        assert result == True
+        assert transaction.status == TransactionStatus.completed
+        assert transaction.completed_at is not None
+        
+        # Invalid transition: completed -> processing
+        result = transaction.update_status(TransactionStatus.processing)
+        assert result == False
+        
+        # Valid transition: completed -> reversed
+        result = transaction.update_status(TransactionStatus.reversed)
+        assert result == True
+        assert transaction.status == TransactionStatus.reversed
+        assert transaction.reversed_at is not None
+
+class TestBeneficiaryModel:
+    """Test Beneficiary model"""
+    
+    def test_create_beneficiary(self, db_session, regular_user, second_user):
+        """Test creating a beneficiary"""
         beneficiary = Beneficiary(
-            user_id=user1.id,
-            beneficiary_id=user2.id,
-            nickname='Friend'
+            user_id=regular_user.id,
+            beneficiary_wallet_id=second_user.wallet.id,
+            nickname='Test Friend',
+            category='friend'
         )
-        db.session.add(beneficiary)
-        db.session.commit()
         
-        ben_dict = beneficiary.to_dict()
-        assert ben_dict['nickname'] == 'Friend', "Nickname not saved"
-        assert 'beneficiary' in ben_dict, "Beneficiary details missing"
-        print(f"   ✓ Beneficiary created: {beneficiary}")
-        print("   ✓ Beneficiary serialization working")
+        db_session.add(beneficiary)
+        db_session.commit()
         
-        # Test relationships
-        print("\n5. Testing Relationships...")
-        assert user1.wallet == wallet, "User-Wallet relationship broken"
-        assert user1.sent_transactions.count() == 1, "Sent transactions relationship broken"
-        assert user2.received_transactions.count() == 1, "Received transactions relationship broken"
-        assert user1.beneficiaries.count() == 1, "Beneficiaries relationship broken"
-        print("   ✓ All relationships working correctly")
+        assert beneficiary.id is not None
+        assert beneficiary.total_transfers == 0
+        assert beneficiary.total_amount == Decimal('0.00')
+        assert beneficiary.is_trusted == False
+    
+    def test_beneficiary_can_send(self, db_session, regular_user, second_user):
+        """Test beneficiary sending limits"""
+        beneficiary = Beneficiary(
+            user_id=regular_user.id,
+            beneficiary_wallet_id=second_user.wallet.id
+        )
         
-        # Test cascade delete
-        print("\n6. Testing Cascade Delete...")
-        user_id = user1.id
-        db.session.delete(user1)
-        db.session.commit()
+        # Untrusted beneficiary has lower limits
+        result = beneficiary.can_send(Decimal('10000.00'))
+        assert result['allowed'] == True
         
-        # Verify wallet was deleted
-        deleted_wallet = Wallet.query.filter_by(user_id=user_id).first()
-        assert deleted_wallet is None, "Wallet not cascade deleted"
-        print("   ✓ Cascade delete working")
+        result = beneficiary.can_send(Decimal('60000.00'))  # Above untrusted limit
+        assert result['allowed'] == False
         
-        print("\nAll tests passed!\n")
+        # Trusted beneficiary can send more
+        beneficiary.is_trusted = True
+        result = beneficiary.can_send(Decimal('60000.00'))
+        assert result['allowed'] == True
         
-        # Cleanup
-        db.drop_all()
+        # Custom daily limit
+        beneficiary.daily_limit = Decimal('20000.00')
+        result = beneficiary.can_send(Decimal('25000.00'))
+        assert result['allowed'] == False
+    
+    def test_beneficiary_statistics_update(self, db_session, regular_user, second_user):
+        """Test updating beneficiary statistics"""
+        beneficiary = Beneficiary(
+            user_id=regular_user.id,
+            beneficiary_wallet_id=second_user.wallet.id
+        )
+        db_session.add(beneficiary)
+        db_session.commit()
+        
+        assert beneficiary.total_transfers == 0
+        assert beneficiary.total_amount == Decimal('0.00')
+        assert beneficiary.last_transfer_at is None
+        
+        # Update statistics
+        beneficiary.update_statistics(Decimal('5000.00'))
+        
+        assert beneficiary.total_transfers == 1
+        assert beneficiary.total_amount == Decimal('5000.00')
+        assert beneficiary.last_transfer_at is not None
 
+class TestLedgerEntryModel:
+    """Test LedgerEntry model"""
+    
+    def test_create_ledger_entry(self, db_session, regular_user, sample_transaction):
+        """Test creating a ledger entry"""
+        ledger = LedgerEntry(
+            wallet_id=regular_user.wallet.id,
+            transaction_id=sample_transaction.id,
+            amount=Decimal('-1000.00'),
+            balance_before=Decimal('5000.00'),
+            balance_after=Decimal('4000.00'),
+            entry_type='debit',
+            description='Test debit'
+        )
+        
+        db_session.add(ledger)
+        db_session.commit()
+        
+        assert ledger.id is not None
+        assert ledger.created_at is not None
+    
+    def test_ledger_balance_validation(self):
+        """Test ledger balance calculation validation"""
+        # This would fail due to check constraint
+        # Should be tested at database level
+        
+        # balance_after should equal balance_before + amount
+        # Negative test case would be trying to create with invalid calculation
+        pass
 
-if __name__ == '__main__':
-    test_models()
+class TestAuditLogModel:
+    """Test AuditLog model"""
+    
+    def test_create_audit_log(self, db_session, regular_user):
+        """Test creating an audit log"""
+        audit_log = AuditLog.log_user_action(
+            actor_id=regular_user.id,
+            action='test.action',
+            resource_type='user',
+            resource_id=regular_user.id,
+            old_values={'name': 'old'},
+            new_values={'name': 'new'},
+            status='success'
+        )
+        
+        db_session.commit()
+        
+        assert audit_log.id is not None
+        assert audit_log.actor_type == 'user'
+        assert audit_log.created_at is not None
+    
+    def test_audit_log_types(self, db_session, regular_user, admin_user):
+        """Test different types of audit logs"""
+        # User action
+        user_log = AuditLog.log_user_action(
+            actor_id=regular_user.id,
+            action='user.login',
+            resource_type='user',
+            resource_id=regular_user.id
+        )
+        assert user_log.actor_type == 'user'
+        
+        # Admin action
+        admin_log = AuditLog.log_admin_action(
+            actor_id=admin_user.id,
+            action='admin.verify',
+            resource_type='kyc',
+            resource_id=1
+        )
+        assert admin_log.actor_type == 'admin'
+        
+        # System action
+        system_log = AuditLog.log_system_action(
+            action='system.cleanup',
+            resource_type='transaction',
+            resource_id=1
+        )
+        assert system_log.actor_type == 'system'
+        
+        db_session.commit()
