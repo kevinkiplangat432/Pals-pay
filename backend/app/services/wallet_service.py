@@ -1,7 +1,7 @@
 from decimal import Decimal
 from datetime import datetime, timedelta
 from sqlalchemy import func
-from backend.app.extensions import db
+from ..extensions import db
 from app.models import Wallet, Transaction, LedgerEntry, AuditLog
 from app.models.enums import TransactionStatus, TransactionType, PaymentProvider
 
