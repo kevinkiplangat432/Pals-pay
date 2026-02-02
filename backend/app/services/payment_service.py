@@ -4,7 +4,7 @@ from datetime import datetime
 import uuid
 from decimal import Decimal
 import json
-from backend.app.extensions import db
+from ..extensions import db
 from app.models import Transaction, Wallet, PaymentMethod, AuditLog
 from app.models.enums import TransactionStatus, TransactionType, PaymentProvider
 
