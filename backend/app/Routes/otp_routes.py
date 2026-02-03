@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.auth.decorators import token_required
-from app.services.otp_service import OTPService
+from app.services.otp_services import OTPService
 
 otp_bp = Blueprint('otp', __name__, url_prefix='/api/otp')
 
