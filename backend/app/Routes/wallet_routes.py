@@ -4,7 +4,7 @@ from datetime import datetime
 from ..extensions import db
 from app.models import Wallet, Transaction, PaymentMethod
 from app.models.enums import TransactionType, TransactionStatus, PaymentProvider
-from app.auth.decorators import token_required, kyc_required
+from app.auth.decorators import token_required, kyc_required, otp_required
 from app.services.wallet_service import WalletService
 from app.services.transaction_service import TransactionService
 from app.services.payment_service import DarajaPaymentService
@@ -228,6 +228,52 @@ def transaction_summary():
     
     return jsonify(summary), 200
 
+
+# Transfer to beneficiary (REQUIRES OTP)
+@wallet_bp.route('/transfer', methods=['POST'])
+@token_required
+@kyc_required
+@otp_required('transfer', 'amount')
+def transfer_to_beneficiary(current_user):
+    """Transfer to beneficiary with OTP verification"""
+    data = request.get_json()
+    
+    beneficiary_wallet_id = data.get('beneficiary_wallet_id')
+    amount = data.get('amount')
+    description = data.get('description')
+    
+    if not beneficiary_wallet_id or not amount:
+        return jsonify({'message': 'Beneficiary wallet ID and amount are required'}), 400
+    
+    # Process transfer
+    result = TransactionService.create_transfer(
+        sender_user_id=current_user.id,
+        receiver_wallet_id=beneficiary_wallet_id,
+        amount=amount,
+        description=description
+    )
+    
+    if result['success']:
+        return jsonify(result), 200
+    else:
+        return jsonify(result), 400
+
+
+# Withdraw funds (REQUIRES OTP)
+@wallet_bp.route('/withdraw', methods=['POST'])
+@token_required
+@kyc_required
+@otp_required('withdrawal', 'amount')
+def withdraw_funds(current_user):
+    """Withdraw funds with OTP verification"""
+    data = request.get_json()
+    
+    amount = data.get('amount')
+    payment_method_id = data.get('payment_method_id')
+    
+    if not amount or not payment_method_id:
+        return jsonify({'message': 'Amount and payment method are required'}), 400
+    
 # Withdraw to bank/MPesa
 @wallet_bp.route('/withdraw', methods=['POST'])
 @token_required

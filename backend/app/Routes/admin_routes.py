@@ -6,7 +6,7 @@ from decimal import Decimal
 from app.models import User, Wallet, Transaction, KYCVerification, AuditLog
 from app.models.enums import TransactionStatus, KYCStatus
 from ..extensions import db
-from app.auth.decorators import token_required, role_required
+from app.auth.decorators import token_required, role_required, kyc_required, otp_required
 from app.services.analytics_service import AnalyticsService
 from app.services.kyc_service import KYCService
 
@@ -201,7 +201,8 @@ def get_system_stats():
 @admin_bp.route('/transactions/<int:tx_id>/reverse', methods=['POST'])
 @token_required
 @role_required('admin')
-def reverse_transaction(tx_id):
+@otp_required('admin_reverse')
+def reverse_transaction(tx_id, current_user):
     transaction = Transaction.query.get_or_404(tx_id)
     
     if transaction.status != TransactionStatus.completed:
