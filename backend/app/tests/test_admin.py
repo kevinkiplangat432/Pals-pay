@@ -14,7 +14,7 @@ class TestAdminRoutes:
         # Regular user should get 403
         assert response.status_code == 403
     
-    def test_get_all_users_admin_success(self, client, admin_headers, regular_user):
+    def test_get_all_users_admin_success(self, client, admin_headers, admin_user, regular_user):
         """Test admin can get all users"""
         response = client.get('/api/admin/users',
                             headers=admin_headers)
@@ -24,8 +24,13 @@ class TestAdminRoutes:
         assert 'users' in response_data
         assert 'total' in response_data
         assert 'pages' in response_data
+        
+        # Should include both admin and regular user
+        user_ids = [user['id'] for user in response_data['users']]
+        assert admin_user.id in user_ids
+        assert regular_user.id in user_ids
     
-    def test_toggle_user_status_admin(self, client, admin_headers, regular_user, db_session):
+    def test_toggle_user_status_admin(self, client, admin_headers, admin_user, regular_user, db_session):
         """Test admin can toggle user status"""
         data = {'is_active': False}
         
@@ -39,15 +44,15 @@ class TestAdminRoutes:
         db_session.refresh(regular_user)
         assert regular_user.is_active == False
     
-    def test_toggle_user_status_regular_user(self, client, auth_headers):
+    def test_toggle_user_status_regular_user(self, client, auth_headers, regular_user):
         """Test regular user cannot toggle status"""
-        response = client.put('/api/admin/users/1/status',
+        response = client.put(f'/api/admin/users/{regular_user.id}/status',
                             headers=auth_headers,
                             json={'is_active': False})
         
         assert response.status_code == 403
     
-    def test_get_all_wallets_admin(self, client, admin_headers):
+    def test_get_all_wallets_admin(self, client, admin_headers, admin_user, regular_user):
         """Test admin can get all wallets"""
         response = client.get('/api/admin/wallets',
                             headers=admin_headers)
@@ -55,6 +60,11 @@ class TestAdminRoutes:
         assert response.status_code == 200
         response_data = json.loads(response.data)
         assert 'wallets' in response_data
+        
+        # Should show wallets for both users
+        wallet_user_ids = [wallet['user_id'] for wallet in response_data['wallets']]
+        assert admin_user.id in wallet_user_ids
+        assert regular_user.id in wallet_user_ids
     
     def test_get_all_transactions_admin(self, client, admin_headers, sample_transaction):
         """Test admin can get all transactions"""
@@ -65,7 +75,7 @@ class TestAdminRoutes:
         response_data = json.loads(response.data)
         assert 'transactions' in response_data
     
-    def test_get_system_stats_admin(self, client, admin_headers):
+    def test_get_system_stats_admin(self, client, admin_headers, admin_user, regular_user):
         """Test admin can get system statistics"""
         response = client.get('/api/admin/stats',
                             headers=admin_headers)
@@ -77,8 +87,11 @@ class TestAdminRoutes:
         assert 'users' in response_data
         assert 'wallets' in response_data
         assert 'transactions' in response_data
+        
+        # Should have at least 2 users (admin + regular)
+        assert response_data['users']['total'] >= 2
     
-    def test_reverse_transaction_admin(self, client, admin_headers, sample_transaction, db_session):
+    def test_reverse_transaction_admin(self, client, admin_headers, admin_user, sample_transaction, db_session):
         """Test admin can reverse transaction"""
         # Get initial balances
         from app.models import Wallet
@@ -89,7 +102,8 @@ class TestAdminRoutes:
         initial_receiver_balance = receiver_wallet.balance
         
         response = client.post(f'/api/admin/transactions/{sample_transaction.id}/reverse',
-                             headers=admin_headers)
+                             headers=admin_headers,
+                             json={})
         
         assert response.status_code == 200
         
@@ -102,18 +116,19 @@ class TestAdminRoutes:
         # Receiver should lose amount
         assert receiver_wallet.balance < initial_receiver_balance
     
-    def test_reverse_already_reversed(self, client, admin_headers, sample_transaction, db_session):
+    def test_reverse_already_reversed(self, client, admin_headers, admin_user, sample_transaction, db_session):
         """Test cannot reverse already reversed transaction"""
         from app.models.enums import TransactionStatus
         sample_transaction.status = TransactionStatus.reversed
         db_session.commit()
         
         response = client.post(f'/api/admin/transactions/{sample_transaction.id}/reverse',
-                             headers=admin_headers)
+                             headers=admin_headers,
+                             json={})
         
         assert response.status_code == 400
     
-    def test_get_suspicious_activities_admin(self, client, admin_headers):
+    def test_get_suspicious_activities_admin(self, client, admin_headers, admin_user):
         """Test admin can get suspicious activities"""
         response = client.get('/api/admin/suspicious-activities',
                             headers=admin_headers)
@@ -124,7 +139,7 @@ class TestAdminRoutes:
         assert 'suspicious_users' in response_data
         assert 'failed_logins' in response_data
     
-    def test_get_pending_kyc_admin(self, client, admin_headers, unverified_user, db_session):
+    def test_get_pending_kyc_admin(self, client, admin_headers, admin_user, unverified_user, db_session):
         """Test admin can get pending KYC"""
         # Create pending KYC
         from app.models import KYCVerification
@@ -144,8 +159,12 @@ class TestAdminRoutes:
         assert response.status_code == 200
         response_data = json.loads(response.data)
         assert 'kyc_verifications' in response_data
+        
+        # Should contain our pending KYC
+        kyc_ids = [k['id'] for k in response_data['kyc_verifications']]
+        assert kyc.id in kyc_ids
     
-    def test_verify_kyc_admin(self, client, admin_headers, unverified_user, db_session):
+    def test_verify_kyc_admin(self, client, admin_headers, admin_user, unverified_user, db_session):
         """Test admin can verify KYC"""
         from app.models import KYCVerification
         from app.models.enums import KYCStatus
@@ -170,9 +189,9 @@ class TestAdminRoutes:
         db_session.refresh(kyc)
         assert kyc.status == KYCStatus.verified
         assert kyc.verified_at is not None
-        assert kyc.verified_by == admin_user.id  # Needs admin_user fixture
+        assert kyc.verified_by == admin_user.id
     
-    def test_reject_kyc_admin(self, client, admin_headers, unverified_user, db_session):
+    def test_reject_kyc_admin(self, client, admin_headers, admin_user, unverified_user, db_session):
         """Test admin can reject KYC"""
         from app.models import KYCVerification
         from app.models.enums import KYCStatus
@@ -200,7 +219,7 @@ class TestAdminRoutes:
         assert kyc.status == KYCStatus.rejected
         assert kyc.rejection_reason == 'Document blurry'
     
-    def test_get_profit_trends_admin(self, client, admin_headers):
+    def test_get_profit_trends_admin(self, client, admin_headers, admin_user):
         """Test admin can get profit trends"""
         response = client.get('/api/admin/analytics/profit-trends',
                             headers=admin_headers)
@@ -211,7 +230,7 @@ class TestAdminRoutes:
         assert 'by_transaction_type' in response_data
         assert 'top_users' in response_data
     
-    def test_get_audit_logs_admin(self, client, admin_headers):
+    def test_get_audit_logs_admin(self, client, admin_headers, admin_user):
         """Test admin can get audit logs"""
         response = client.get('/api/admin/audit-logs',
                             headers=admin_headers)
@@ -220,7 +239,7 @@ class TestAdminRoutes:
         response_data = json.loads(response.data)
         assert 'audit_logs' in response_data
     
-    def test_admin_endpoints_require_auth(self, client):
+    def test_admin_endpoints_require_auth(self, client, admin_user):
         """Test all admin endpoints require authentication"""
         endpoints = [
             '/api/admin/users',

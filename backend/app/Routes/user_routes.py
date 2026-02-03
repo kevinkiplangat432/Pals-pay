@@ -4,7 +4,7 @@ from datetime import datetime
 from ..extensions import db
 from ..models import User, KYCVerification, PaymentMethod, AuditLog
 from ..models.enums import KYCStatus, PaymentProvider
-from ..auth.decorators import token_required , kyc_required
+from ..auth.decorators import token_required , kyc_required, otp_required
 from ..services.kyc_service import KYCService
 from werkzeug.security import generate_password_hash
 
@@ -96,12 +96,14 @@ def update_user_profile():
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Failed to update profile: {str(e)}'}), 500
+    
 
 # Change password
 @user_bp.route('/change-password', methods=['PUT'])
 @token_required
-def change_password():
-    user = request.current_user
+@otp_required('change_password')
+def change_password(current_user):
+    """Change password with OTP verification"""
     data = request.get_json()
     
     current_password = data.get('current_password')
@@ -111,21 +113,26 @@ def change_password():
         return jsonify({'message': 'Current password and new password are required'}), 400
     
     # Verify current password
-    if not user.check_password(current_password):
+    if not current_user.check_password(current_password):
         return jsonify({'message': 'Current password is incorrect'}), 400
     
+    # Validate new password strength
+    if len(new_password) < 6:
+        return jsonify({'message': 'New password must be at least 6 characters'}), 400
+    
     # Set new password
-    user.set_password(new_password)
+    current_user.set_password(new_password)
     
     try:
         db.session.commit()
         
         # Log password change
+        from app.models import AuditLog
         AuditLog.log_user_action(
-            actor_id=user.id,
+            actor_id=current_user.id,
             action='password.change',
             resource_type='user',
-            resource_id=user.id,
+            resource_id=current_user.id,
             status='success'
         )
         

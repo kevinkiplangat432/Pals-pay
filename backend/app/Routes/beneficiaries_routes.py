@@ -1,10 +1,22 @@
 from flask import Blueprint, request, jsonify
 from ..extensions import db
 from app.models import Beneficiary, User, Wallet
-from app.auth.decorators import token_required, kyc_required
+from app.auth.decorators import token_required, kyc_required, otp_required
 
 beneficiaries_bp = Blueprint('beneficiaries', __name__, url_prefix='/api/beneficiaries')
 
+
+# Add a new beneficiary (REQUIRES OTP)
+@beneficiaries_bp.route('/', methods=['POST'])
+@token_required
+@kyc_required
+@otp_required('add_beneficiary')
+def create_beneficiary(current_user):
+    """Add beneficiary with OTP verification"""
+    user = request.current_user
+    data = request.get_json()
+    
+    
 # Get all beneficiaries for current user
 @beneficiaries_bp.route('/', methods=['GET'])
 @token_required

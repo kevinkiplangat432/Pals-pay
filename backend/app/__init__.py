@@ -51,12 +51,14 @@ def create_app(config_name='default'):
     from .Routes.beneficiaries_routes import beneficiaries_bp
     from .Routes.user_routes import user_bp
     from .Routes.wallet_routes import wallet_bp
+    from .Routes.otp_routes import otp_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(beneficiaries_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(wallet_bp)
+    app.register_blueprint(otp_bp)
     
     # Error handlers
     @app.errorhandler(404)
