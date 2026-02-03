@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 from sqlalchemy import func, extract, and_
-from backend.app.extensions import db
-from app.models import User, Wallet, Transaction, AuditLog
-from app.models.enums import TransactionStatus, KYCStatus
+from ..extensions import db
+from ..models import User, Wallet, Transaction, AuditLog
+from ..models.enums import TransactionStatus, KYCStatus
 
 class AnalyticsService:
     

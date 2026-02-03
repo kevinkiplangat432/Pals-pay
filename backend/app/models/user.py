@@ -1,14 +1,12 @@
-
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
-from ..extensions import db
+from extensions import db
 from .enums import KYCStatus
 
 
 class User(db.Model):
-   
     __tablename__ = 'users'
     
     # Identity fields
@@ -24,7 +22,7 @@ class User(db.Model):
     # Contact information
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     username = db.Column(db.String(80), unique=True, nullable=False, index=True)
-    phone_number = db.Column(db.String(20), unique=True, nullable=False, index=True)  # Primary identifier
+    phone_number = db.Column(db.String(20), unique=True, nullable=False, index=True)
     
     # Profile fields
     first_name = db.Column(db.String(50), nullable=False)
@@ -33,15 +31,19 @@ class User(db.Model):
     
     # Security
     password_hash = db.Column(db.String(255), nullable=False)
-    two_factor_enabled = db.Column(db.Boolean, default=False, nullable=False)
-    last_login_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    
+    # otp fields
+    otp_code = db.Column(db.String(6), nullable=True)
+    otp_expires_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    otp_attempts = db.Column(db.Integer, default=0, nullable=False)
+    otp_locked_until = db.Column(db.DateTime(timezone=True), nullable=True)
     
     # Permissions & Status
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
-    is_verified = db.Column(db.Boolean, default=False, nullable=False)
+    is_verified = db.Column(db.Boolean, default=False, nullable=False)  # Email/phone verified
     
-    # KYC Status (kept in sync with KYCVerification model)
+    # KYC Status
     kyc_status = db.Column(
         db.Enum(KYCStatus, name="kyc_status_enum"),
         default=KYCStatus.unverified,
@@ -51,6 +53,7 @@ class User(db.Model):
     # Timestamps
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=db.func.now(), nullable=True)
+    last_login_at = db.Column(db.DateTime(timezone=True), nullable=True)
     
     # Relationships
     wallet = db.relationship('Wallet', backref='user', uselist=False, cascade='all, delete-orphan')
@@ -65,7 +68,7 @@ class User(db.Model):
     )
     
     def __init__(self, **kwargs):
-        """Initialize user with default values"""
+        # Initialize user with default values
         super().__init__(**kwargs)
         # Create wallet automatically for new users
         if not self.wallet:
@@ -77,7 +80,6 @@ class User(db.Model):
             self.kyc_verification = KYCVerification()
     
     def set_password(self, password):
-    
         self.password_hash = generate_password_hash(password)
     
     def check_password(self, password):
@@ -90,6 +92,9 @@ class User(db.Model):
         if not self.is_active:
             return {'allowed': False, 'reason': 'Account is inactive'}
         
+        if not self.is_verified:
+            return {'allowed': False, 'reason': 'Account not verified'}
+        
         if self.kyc_status != KYCStatus.verified:
             return {'allowed': False, 'reason': 'KYC not verified'}
         
@@ -97,6 +102,66 @@ class User(db.Model):
             return {'allowed': False, 'reason': 'Wallet is frozen'}
         
         return {'allowed': True, 'reason': 'OK'}
+    
+    # OTP Methods
+    def generate_otp(self, expires_minutes=10):
+        """Generate a new OTP code"""
+        import random
+        import string
+        from datetime import datetime, timedelta, timezone
+        
+        # Check if locked
+        if self.otp_locked_until and self.otp_locked_until > datetime.now(timezone.utc):
+            return None, "OTP requests locked. Try again later."
+        
+        # Generate 6-digit numeric code
+        code = ''.join(random.choice(string.digits) for _ in range(6))
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
+        
+        self.otp_code = code
+        self.otp_expires_at = expires_at
+        self.otp_attempts = 0
+        
+        return code, None
+    
+    def verify_otp(self, code):
+        """Verify OTP code"""
+        from datetime import datetime, timezone
+        
+        # Check if locked
+        if self.otp_locked_until and self.otp_locked_until > datetime.now(timezone.utc):
+            return {'success': False, 'message': 'Account locked. Try again later.'}
+        
+        # Check if OTP exists
+        if not self.otp_code:
+            return {'success': False, 'message': 'No OTP requested'}
+        
+        # Check if expired
+        if datetime.now(timezone.utc) > self.otp_expires_at:
+            self.clear_otp()
+            return {'success': False, 'message': 'OTP expired'}
+        
+        # Verify code
+        if self.otp_code == str(code):
+            # Successful verification
+            self.clear_otp()
+            return {'success': True, 'message': 'OTP verified'}
+        else:
+            # Failed attempt
+            self.otp_attempts += 1
+            
+            # Lock after 5 failed attempts
+            if self.otp_attempts >= 5:
+                self.otp_locked_until = datetime.now(timezone.utc) + timedelta(hours=1)
+                return {'success': False, 'message': 'Too many failed attempts. Account locked for 1 hour.'}
+            
+            return {'success': False, 'message': 'Invalid OTP code'}
+    
+    def clear_otp(self):
+        """Clear OTP data"""
+        self.otp_code = None
+        self.otp_expires_at = None
+        self.otp_attempts = 0
     
     def to_dict(self, include_wallet=False, include_kyc=False):
         data = {
@@ -113,7 +178,6 @@ class User(db.Model):
             'is_active': self.is_active,
             'is_verified': self.is_verified,
             'kyc_status': self.kyc_status.value,
-            'two_factor_enabled': self.two_factor_enabled,
             'last_login_at': self.last_login_at.isoformat() if self.last_login_at else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
