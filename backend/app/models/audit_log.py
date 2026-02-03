@@ -21,7 +21,7 @@ class AuditLog(db.Model):
     
     # Action details
     action = db.Column(db.String(100), nullable=False, index=True)
-    resource_type = db.Column(db.String(50), nullable=False, index=True)  # 'user', 'transaction', 'wallet', etc.
+    resource_type = db.Column(db.String(50), nullable=False, index=True)  # 'user', 'transaction', 'wallet', 
     resource_id = db.Column(db.Integer, nullable=True, index=True)
     
     # Changes

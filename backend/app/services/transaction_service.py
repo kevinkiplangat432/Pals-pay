@@ -2,7 +2,7 @@ from decimal import Decimal
 from datetime import datetime, timedelta
 from sqlalchemy import and_, func
 import uuid
-from backend.app.extensions import db
+from ..extensions import db
 from app.models import Transaction, Wallet, LedgerEntry, User, Beneficiary, AuditLog
 from app.models.enums import TransactionStatus, TransactionType, PaymentProvider
 

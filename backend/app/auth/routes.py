@@ -3,15 +3,18 @@ from datetime import datetime, timedelta
 import jwt
 from ..models.user import User
 from ..extensions import db
-from app.auth.decorators import token_required
+from .decorators import token_required
+from app.utils.otp import generate_otp  
 
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+otp=generate_otp  #import otp generator function
+
 
 #register a new user
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
+    data = request.get_json() #get user data from request
     name = data.get('name')
     email = data.get('email')
     password = data.get('password')
@@ -79,3 +82,75 @@ def update_profile(current_user):
     db.session.commit()
 
     return jsonify({'message': 'Profile updated successfully!'}), 200
+
+#forgot password route
+@auth_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get('email')
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'message': 'User not found!'}), 404
+
+    otp_code = otp()  #generate otp code
+    user.reset_otp = otp_code  #store otp code
+    user.reset_otp_expiration = datetime.utcnow() + timedelta(minutes=10)  #set otp expiration time
+    user.reset_otp_used = False  #mark otp as unused
+    db.session.commit()
+
+    # In real application, send the OTP via email/SMS here
+
+    return jsonify({'message': 'OTP sent to your email!'}), 200
+
+#verify otp
+@auth_bp.route('/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.get_json()
+    email = data.get('email')
+    otp_code = data.get('otp')
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'message': 'User not found!'}), 404
+
+    if user.reset_otp_used:
+        return jsonify({'message': 'OTP has already been used!'}), 400
+
+    if user.reset_otp != otp_code:
+        return jsonify({'message': 'Invalid OTP!'}), 400
+
+    if datetime.utcnow() > user.reset_otp_expiration:
+        return jsonify({'message': 'OTP has expired!'}), 400
+
+    user.reset_otp_used = True  #mark otp as used
+    db.session.commit()
+
+    return jsonify({'message': 'OTP verified successfully!'}), 200
+
+#reset password with otp
+@auth_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    email = data.get('email')
+    otp_code = data.get('otp')
+    new_password = data.get('new_password')
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'message': 'User not found!'}), 404
+
+    if user.reset_otp_used:
+        return jsonify({'message': 'OTP has already been used!'}), 400
+
+    if user.reset_otp != otp_code:
+        return jsonify({'message': 'Invalid OTP!'}), 400
+
+    if datetime.utcnow() > user.reset_otp_expiration:
+        return jsonify({'message': 'OTP has expired!'}), 400
+
+    user.set_password(new_password)  #set new password
+    user.reset_otp_used = True  #mark otp as used
+    db.session.commit()
+
+    return jsonify({'message': 'Password reset successfully!'}), 200

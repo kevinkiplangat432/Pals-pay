@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from backend.app.extensions import db
+from ..extensions import db
 from app.models import KYCVerification, AuditLog, User
 from app.models.enums import KYCStatus, DocumentType
 

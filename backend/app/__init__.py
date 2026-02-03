@@ -46,17 +46,19 @@ def create_app(config_name='default'):
         request.id = str(uuid.uuid4())
     
     # Register blueprints
-    from app.auth.routes import auth_bp
-    from app.Routes.admin_routes import admin_bp
-    from app.Routes.beneficiaries_routes import beneficiaries_bp
-    from app.Routes.user_routes import user_bp
-    from app.Routes.wallet_routes import wallet_bp
+    from .auth.routes import auth_bp
+    from .Routes.admin_routes import admin_bp
+    from .Routes.beneficiaries_routes import beneficiaries_bp
+    from .Routes.user_routes import user_bp
+    from .Routes.wallet_routes import wallet_bp
+    from .Routes.otp_routes import otp_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(beneficiaries_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(wallet_bp)
+    app.register_blueprint(otp_bp)
     
     # Error handlers
     @app.errorhandler(404)

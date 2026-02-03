@@ -1,14 +1,16 @@
 from flask import Blueprint, request, jsonify
 from ..extensions import db
 from app.models import Beneficiary, User, Wallet
-from app.auth.decorators import token_required, kyc_required
+from ..auth.decorators import token_required, kyc_required, otp_required
 
 beneficiaries_bp = Blueprint('beneficiaries', __name__, url_prefix='/api/beneficiaries')
+
 
 # Get all beneficiaries for current user
 @beneficiaries_bp.route('/', methods=['GET'])
 @token_required
-def get_beneficiaries():
+def get_beneficiaries(current_user):
+    """Get user's beneficiaries"""
     user = request.current_user
     
     # Get query parameters
@@ -30,11 +32,14 @@ def get_beneficiaries():
         'count': len(beneficiaries)
     }), 200
 
-# Add a new beneficiary
+
+# Add a new beneficiary (REQUIRES OTP)
 @beneficiaries_bp.route('/', methods=['POST'])
 @token_required
 @kyc_required
-def create_beneficiary():
+@otp_required('add_beneficiary')
+def create_beneficiary(current_user):
+    """Add beneficiary with OTP verification"""
     user = request.current_user
     data = request.get_json()
     
@@ -93,10 +98,12 @@ def create_beneficiary():
         db.session.rollback()
         return jsonify({'message': f'Failed to add beneficiary: {str(e)}'}), 500
 
+
 # Update beneficiary
 @beneficiaries_bp.route('/<int:beneficiary_id>', methods=['PUT'])
 @token_required
-def update_beneficiary(beneficiary_id):
+def update_beneficiary(current_user, beneficiary_id):
+    """Update beneficiary information"""
     user = request.current_user
     beneficiary = Beneficiary.query.filter_by(
         id=beneficiary_id,
@@ -130,10 +137,12 @@ def update_beneficiary(beneficiary_id):
         db.session.rollback()
         return jsonify({'message': f'Failed to update beneficiary: {str(e)}'}), 500
 
+
 # Delete beneficiary
 @beneficiaries_bp.route('/<int:beneficiary_id>', methods=['DELETE'])
 @token_required
-def delete_beneficiary(beneficiary_id):
+def delete_beneficiary(current_user, beneficiary_id):
+    """Delete a beneficiary"""
     user = request.current_user
     beneficiary = Beneficiary.query.filter_by(
         id=beneficiary_id,
@@ -150,10 +159,12 @@ def delete_beneficiary(beneficiary_id):
         db.session.rollback()
         return jsonify({'message': f'Failed to delete beneficiary: {str(e)}'}), 500
 
+
 # Search for users to add as beneficiaries
 @beneficiaries_bp.route('/search', methods=['GET'])
 @token_required
-def search_users():
+def search_users(current_user):
+    """Search for users to add as beneficiaries"""
     user = request.current_user
     query = request.args.get('q', '').strip()
     

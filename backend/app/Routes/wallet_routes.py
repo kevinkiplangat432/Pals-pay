@@ -4,46 +4,43 @@ from datetime import datetime
 from ..extensions import db
 from app.models import Wallet, Transaction, PaymentMethod
 from app.models.enums import TransactionType, TransactionStatus, PaymentProvider
-from app.auth.decorators import token_required, kyc_required
+from app.auth.decorators import token_required, kyc_required, otp_required
 from app.services.wallet_service import WalletService
 from app.services.transaction_service import TransactionService
-from app.services.payment_service import DarajaPaymentService
 import uuid
 
 wallet_bp = Blueprint('wallet', __name__, url_prefix='/api/wallet')
 
-# Get wallet summary
+
 @wallet_bp.route('/summary', methods=['GET'])
 @token_required
-def wallet_summary():
-    user = request.current_user
-    
-    wallet = Wallet.query.filter_by(user_id=user.id).first()
+def wallet_summary(current_user):
+    """Get wallet summary"""
+    wallet = Wallet.query.filter_by(user_id=current_user.id).first()
     if not wallet:
-        wallet = Wallet(user_id=user.id)
+        wallet = Wallet(user_id=current_user.id)
         db.session.add(wallet)
         db.session.commit()
     
-    summary = WalletService.get_wallet_balance(user.id)
+    summary = WalletService.get_wallet_balance(current_user.id)
     
     return jsonify(summary), 200
 
-# Get wallet analytics
+
 @wallet_bp.route('/analytics', methods=['GET'])
 @token_required
-def wallet_analytics():
-    user = request.current_user
-    
-    analytics = WalletService.get_wallet_analytics(user.id)
+def wallet_analytics(current_user):
+    """Get wallet analytics"""
+    analytics = WalletService.get_wallet_analytics(current_user.id)
     
     return jsonify(analytics), 200
 
-# Add funds via MPesa
+
 @wallet_bp.route('/deposit/mpesa', methods=['POST'])
 @token_required
 @kyc_required
-def deposit_via_mpesa():
-    user = request.current_user
+def deposit_via_mpesa(current_user):
+    """Deposit via MPesa"""
     data = request.get_json()
     
     amount = data.get('amount')
@@ -63,13 +60,14 @@ def deposit_via_mpesa():
     
     # Initialize payment service
     from app import create_app
+    from app.services.payment_service import DarajaPaymentService
     app = create_app()
     payment_service = DarajaPaymentService()
     payment_service.init_app(app)
     
     # Process deposit
     result = payment_service.process_deposit(
-        user_id=user.id,
+        user_id=current_user.id,
         amount=amount,
         phone_number=phone_number
     )
@@ -79,82 +77,13 @@ def deposit_via_mpesa():
     else:
         return jsonify(result), 400
 
-# MPesa callback endpoint (for Daraja API)
-@wallet_bp.route('/deposit/mpesa-callback', methods=['POST'])
-def mpesa_callback():
-    """
-    Callback endpoint for MPesa Daraja API
-    """
-    data = request.get_json()
-    
-    # Parse callback data
-    checkout_request_id = data.get('Body', {}).get('stkCallback', {}).get('CheckoutRequestID')
-    result_code = data.get('Body', {}).get('stkCallback', {}).get('ResultCode')
-    result_desc = data.get('Body', {}).get('stkCallback', {}).get('ResultDesc')
-    callback_metadata = data.get('Body', {}).get('stkCallback', {}).get('CallbackMetadata', {}).get('Item', [])
-    
-    # Find transaction by checkout request ID
-    transaction = Transaction.query.filter_by(
-        external_reference=checkout_request_id,
-        status=TransactionStatus.pending
-    ).first()
-    
-    if not transaction:
-        return jsonify({'ResultCode': 1, 'ResultDesc': 'Transaction not found'}), 404
-    
-    if result_code == 0:
-        # Payment successful
-        # Extract payment details from metadata
-        amount = None
-        mpesa_receipt = None
-        phone_number = None
-        
-        for item in callback_metadata:
-            if item.get('Name') == 'Amount':
-                amount = item.get('Value')
-            elif item.get('Name') == 'MpesaReceiptNumber':
-                mpesa_receipt = item.get('Value')
-            elif item.get('Name') == 'PhoneNumber':
-                phone_number = item.get('Value')
-        
-        if amount and mpesa_receipt:
-            # Update transaction
-            transaction.amount = Decimal(str(amount))
-            transaction.net_amount = Decimal(str(amount))
-            transaction.external_sender = phone_number
-            transaction.external_reference = mpesa_receipt
-            transaction.update_status(TransactionStatus.completed)
-            
-            # Update wallet
-            wallet = transaction.receiver_wallet
-            if wallet:
-                wallet.balance += transaction.amount
-                wallet.available_balance += transaction.amount
-                wallet.last_transaction_at = datetime.utcnow()
-            
-            db.session.commit()
-            
-            return jsonify({'ResultCode': 0, 'ResultDesc': 'Success'}), 200
-        else:
-            transaction.update_status(TransactionStatus.failed)
-            transaction.metadata = {'error': 'Missing metadata', 'callback_data': data}
-            db.session.commit()
-            
-            return jsonify({'ResultCode': 1, 'ResultDesc': 'Missing payment details'}), 400
-    else:
-        # Payment failed
-        transaction.update_status(TransactionStatus.failed)
-        transaction.metadata = {'error': result_desc, 'callback_data': data}
-        db.session.commit()
-        
-        return jsonify({'ResultCode': 0, 'ResultDesc': 'Callback processed'}), 200
 
-# Transfer to beneficiary
 @wallet_bp.route('/transfer', methods=['POST'])
 @token_required
 @kyc_required
-def transfer_to_beneficiary():
-    user = request.current_user
+@otp_required('transfer', 'amount')
+def transfer_to_beneficiary(current_user):
+    """Transfer to beneficiary with OTP verification"""
     data = request.get_json()
     
     beneficiary_wallet_id = data.get('beneficiary_wallet_id')
@@ -166,7 +95,7 @@ def transfer_to_beneficiary():
     
     # Process transfer
     result = TransactionService.create_transfer(
-        sender_user_id=user.id,
+        sender_user_id=current_user.id,
         receiver_wallet_id=beneficiary_wallet_id,
         amount=amount,
         description=description
@@ -177,12 +106,13 @@ def transfer_to_beneficiary():
     else:
         return jsonify(result), 400
 
-# Transfer to phone number (non-beneficiary)
+
 @wallet_bp.route('/transfer/phone', methods=['POST'])
 @token_required
 @kyc_required
-def transfer_to_phone():
-    user = request.current_user
+@otp_required('transfer', 'amount')
+def transfer_to_phone(current_user):
+    """Transfer to phone number with OTP verification"""
     data = request.get_json()
     
     phone_number = data.get('phone_number')
@@ -205,7 +135,7 @@ def transfer_to_phone():
     
     # Process transfer
     result = TransactionService.create_transfer(
-        sender_user_id=user.id,
+        sender_user_id=current_user.id,
         receiver_wallet_id=receiver_wallet.id,
         amount=amount,
         description=description or f"Transfer to {phone_number}"
@@ -216,24 +146,13 @@ def transfer_to_phone():
     else:
         return jsonify(result), 400
 
-# Get transaction summary
-@wallet_bp.route('/transactions/summary', methods=['GET'])
-@token_required
-def transaction_summary():
-    user = request.current_user
-    
-    days = request.args.get('days', 30, type=int)
-    
-    summary = TransactionService.get_transaction_summary(user.id, days)
-    
-    return jsonify(summary), 200
 
-# Withdraw to bank/MPesa
 @wallet_bp.route('/withdraw', methods=['POST'])
 @token_required
 @kyc_required
-def withdraw_funds():
-    user = request.current_user
+@otp_required('withdrawal', 'amount')
+def withdraw_funds(current_user):
+    """Withdraw funds with OTP verification"""
     data = request.get_json()
     
     amount = data.get('amount')
@@ -252,12 +171,12 @@ def withdraw_funds():
     # Get payment method
     payment_method = PaymentMethod.query.filter_by(
         id=payment_method_id,
-        user_id=user.id,
+        user_id=current_user.id,
         is_verified=True
     ).first_or_404()
     
     # Get wallet
-    wallet = Wallet.query.filter_by(user_id=user.id).first()
+    wallet = Wallet.query.filter_by(user_id=current_user.id).first()
     if not wallet:
         return jsonify({'message': 'Wallet not found'}), 404
     
@@ -314,13 +233,13 @@ def withdraw_funds():
             # Mark payment method as used
             payment_method.mark_as_used()
             
-            # Update transaction status (in real implementation, this would wait for external confirmation)
+            # Update transaction status
             transaction.update_status(TransactionStatus.completed)
             
             # Log the action
             from app.models import AuditLog
             AuditLog.log_user_action(
-                actor_id=user.id,
+                actor_id=current_user.id,
                 action='withdrawal.create',
                 resource_type='transaction',
                 resource_id=transaction.id,
@@ -340,3 +259,14 @@ def withdraw_funds():
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Withdrawal failed: {str(e)}'}), 500
+
+
+@wallet_bp.route('/transactions/summary', methods=['GET'])
+@token_required
+def transaction_summary(current_user):
+    """Get transaction summary"""
+    days = request.args.get('days', 30, type=int)
+    
+    summary = TransactionService.get_transaction_summary(current_user.id, days)
+    
+    return jsonify(summary), 200
