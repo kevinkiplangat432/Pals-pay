@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import jwt
 from ..models.user import User
 from ..extensions import db
-from app.auth.decorators import token_required
+from .decorators import token_required
 from app.utils.otp import generate_otp  
 
 

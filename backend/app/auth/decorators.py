@@ -2,7 +2,7 @@ from functools import wraps
 from flask import request, jsonify, current_app
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, get_jwt
 from app.models import User
-from app.services.otp_service import OTPService
+from ..services.otp_services import OTPService
 
 
 def token_required(f):
