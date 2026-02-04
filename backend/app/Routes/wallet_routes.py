@@ -42,22 +42,23 @@ def wallet_analytics(current_user):
 def deposit_via_mpesa(current_user):
     """Deposit via MPesa"""
     data = request.get_json()
-    
     amount = data.get('amount')
     phone_number = data.get('phone_number')
-    
+
     if not amount or not phone_number:
         return jsonify({'message': 'Amount and phone number are required'}), 400
-    
+
     try:
         amount = Decimal(str(amount))
         if amount <= 0:
             return jsonify({'message': 'Amount must be positive'}), 400
-        if amount > Decimal('70000'):  # MPesa limit
+        if amount > Decimal('70000'):  # MPesa max limit
             return jsonify({'message': 'Amount exceeds MPesa limit (70,000 KES)'}), 400
     except:
         return jsonify({'message': 'Invalid amount'}), 400
+
     
+
     # Initialize payment service
     from app import create_app
     from app.services.payment_service import DarajaPaymentService
@@ -76,6 +77,26 @@ def deposit_via_mpesa(current_user):
         return jsonify(result), 200
     else:
         return jsonify(result), 400
+    
+
+@wallet_bp.route('/mpesa/callback', methods=['POST'])
+def mpesa_callback():
+    """Handle MPesa payment callback"""
+    data = request.get_json()
+    
+    from app import create_app
+    from app.services.payment_service import DarajaPaymentService
+    app = create_app()
+    payment_service = DarajaPaymentService()
+    payment_service.init_app(app)
+    
+    # Process callback
+    result = payment_service.handle_mpesa_callback(data)
+    
+    if result['success']:
+        return jsonify({'message': 'Callback processed successfully'}), 200
+    else:
+        return jsonify({'message': 'Callback processing failed'}), 400
 
 
 @wallet_bp.route('/transfer', methods=['POST'])

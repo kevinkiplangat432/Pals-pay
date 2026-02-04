@@ -57,7 +57,7 @@ class LedgerEntry(db.Model):
         # For sender (debit - amount leaves wallet)
         if transaction.sender_wallet_id and transaction.sender_wallet:
             sender_wallet = transaction.sender_wallet
-            debit_amount = -Decimal(str(transaction.amount)) - Decimal(str(transaction.fee))
+            debit_amount = -Decimal(str(transaction.amount)) - Decimal(str(transaction.fee))  
             
             entry = cls(
                 wallet_id=transaction.sender_wallet_id,
