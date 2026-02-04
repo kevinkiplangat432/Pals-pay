@@ -1,0 +1,1121 @@
+{
+  "info": {
+    "_postman_id": "money-transfer-app",
+    "name": "Money Transfer App API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Complete API collection for Money Transfer App with Flask backend"
+  },
+  "item": [
+    {
+      "name": "📱 Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"phone_number\": \"+254700000001\",\n  \"password\": \"password123\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"User\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new user (unverified)"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Account with OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"\",\n  \"otp_code\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/verify-account",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "verify-account"]
+            },
+            "description": "Verify account with OTP sent after registration"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login user and get JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Get user profile (protected)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"Name\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Update user profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"password123\",\n  \"new_password\": \"newpassword456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "change-password"]
+            },
+            "description": "Change password (requires OTP)"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{refresh_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "refresh"]
+            },
+            "description": "Refresh access token"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Logout user"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "OTP Operations",
+      "item": [
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation_type\": \"transfer\",\n  \"metadata\": {\n    \"amount\": 1000\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/otp/send",
+              "host": ["{{base_url}}"],
+              "path": ["api", "otp", "send"]
+            },
+            "description": "Send OTP for operation verification"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"otp_code\": \"123456\",\n  \"operation_type\": \"transfer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/otp/verify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "otp", "verify"]
+            },
+            "description": "Verify OTP code and get session token"
+          },
+          "response": []
+        },
+        {
+          "name": "Check OTP Requirement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation_type\": \"transfer\",\n  \"amount\": 50000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/otp/check-requirement",
+              "host": ["{{base_url}}"],
+              "path": ["api", "otp", "check-requirement"]
+            },
+            "description": "Check if OTP is required for an operation"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Wallet Operations",
+      "item": [
+        {
+          "name": "Get Wallet Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/wallet/summary",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "summary"]
+            },
+            "description": "Get wallet balance and limits"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Wallet Analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/wallet/analytics",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "analytics"]
+            },
+            "description": "Get detailed wallet analytics and statistics"
+          },
+          "response": []
+        },
+        {
+          "name": "Deposit via MPesa",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"phone_number\": \"+254700000001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallet/deposit/mpesa",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "deposit", "mpesa"]
+            },
+            "description": "Deposit funds via MPesa (requires KYC)"
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer to Beneficiary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-OTP-Session-Token",
+                "value": "{{otp_session_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"beneficiary_wallet_id\": 2,\n  \"amount\": 1000,\n  \"description\": \"Test transfer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallet/transfer",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "transfer"]
+            },
+            "description": "Transfer to beneficiary (requires OTP & KYC)"
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer to Phone Number",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-OTP-Session-Token",
+                "value": "{{otp_session_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone_number\": \"+254700000002\",\n  \"amount\": 500,\n  \"description\": \"Quick transfer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallet/transfer/phone",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "transfer", "phone"]
+            },
+            "description": "Transfer to phone number (requires OTP & KYC)"
+          },
+          "response": []
+        },
+        {
+          "name": "Withdraw Funds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-OTP-Session-Token",
+                "value": "{{otp_session_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"payment_method_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallet/withdraw",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "withdraw"]
+            },
+            "description": "Withdraw funds (requires OTP & KYC)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transaction Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/wallet/transactions/summary",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "transactions", "summary"]
+            },
+            "description": "Get transaction summary for period"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Beneficiary Management",
+      "item": [
+        {
+          "name": "Get All Beneficiaries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", ""]
+            },
+            "description": "Get all beneficiaries for current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Beneficiary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-OTP-Session-Token",
+                "value": "{{otp_session_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"beneficiary_user_id\": 2,\n  \"nickname\": \"My Friend\",\n  \"category\": \"friend\",\n  \"is_trusted\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", ""]
+            },
+            "description": "Add new beneficiary (requires OTP & KYC)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Beneficiary",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"Updated Nickname\",\n  \"daily_limit\": 50000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "1"]
+            },
+            "description": "Update beneficiary information"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Beneficiary",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "1"]
+            },
+            "description": "Delete a beneficiary"
+          },
+          "response": []
+        },
+        {
+          "name": "Search Users for Beneficiary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/search?q=john",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "john"
+                }
+              ]
+            },
+            "description": "Search users to add as beneficiaries"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Profile",
+      "item": [
+        {
+          "name": "Get User Profile (Detailed)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "profile"]
+            },
+            "description": "Get detailed user profile with wallet and KYC info"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone_number\": \"+254711111111\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "profile"]
+            },
+            "description": "Update user profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Get KYC Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/kyc/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "kyc", "status"]
+            },
+            "description": "Get KYC verification status"
+          },
+          "response": []
+        },
+        {
+          "name": "Submit KYC Documents",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "document_type",
+                  "value": "national_id",
+                  "type": "text"
+                },
+                {
+                  "key": "document_number",
+                  "value": "12345678",
+                  "type": "text"
+                },
+                {
+                  "key": "front_document",
+                  "type": "file",
+                  "src": "/path/to/front.jpg"
+                },
+                {
+                  "key": "back_document",
+                  "type": "file",
+                  "src": "/path/to/back.jpg"
+                },
+                {
+                  "key": "selfie",
+                  "type": "file",
+                  "src": "/path/to/selfie.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/kyc/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "kyc", "submit"]
+            },
+            "description": "Submit KYC documents for verification"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment Methods",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/payment-methods",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "payment-methods"]
+            },
+            "description": "Get user's payment methods"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Payment Method",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"mpesa\",\n  \"account_reference\": \"+254700000001\",\n  \"account_name\": \"My MPesa\",\n  \"is_default\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/payment-methods",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "payment-methods"]
+            },
+            "description": "Add new payment method"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Payment Method",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/payment-methods/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "payment-methods", "1"]
+            },
+            "description": "Delete a payment method"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transaction History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/transactions?page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "transactions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get user's transaction history"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin Operations",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users"]
+            },
+            "description": "Get all users (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle User Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/users/1/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users", "1", "status"]
+            },
+            "description": "Activate/deactivate user (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Wallets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/wallets",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "wallets"]
+            },
+            "description": "Get all wallets (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "transactions"]
+            },
+            "description": "Get all transactions (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get System Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "stats"]
+            },
+            "description": "Get system statistics (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Reverse Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-OTP-Session-Token",
+                "value": "{{admin_otp_session_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/transactions/1/reverse",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "transactions", "1", "reverse"]
+            },
+            "description": "Reverse a transaction (admin only, requires OTP)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Suspicious Activities",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/suspicious-activities",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "suspicious-activities"]
+            },
+            "description": "Get suspicious activities report (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending KYC",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/kyc/pending",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "kyc", "pending"]
+            },
+            "description": "Get pending KYC verifications (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify KYC",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approved\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/kyc/1/verify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "kyc", "1", "verify"]
+            },
+            "description": "Verify or reject KYC (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profit Trends",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/profit-trends",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "profit-trends"]
+            },
+            "description": "Get profit trends analytics (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/audit-logs",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "audit-logs"]
+            },
+            "description": "Get system audit logs (admin only)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT access token for regular users"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT refresh token"
+    },
+    {
+      "key": "admin_access_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT access token for admin users"
+    },
+    {
+      "key": "otp_session_token",
+      "value": "",
+      "type": "string",
+      "description": "OTP session token for verified operations"
+    },
+    {
+      "key": "admin_otp_session_token",
+      "value": "",
+      "type": "string",
+      "description": "OTP session token for admin operations"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Pre-request script example",
+          "console.log('Request URL:', pm.request.url);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Test script example",
+          "pm.test('Status code is 200', function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "",
+          "// Save access token from login response",
+          "if (pm.response.code === 200) {",
+          "    var response = pm.response.json();",
+          "    if (response.access_token) {",
+          "        pm.environment.set('access_token', response.access_token);",
+          "    }",
+          "    if (response.refresh_token) {",
+          "        pm.environment.set('refresh_token', response.refresh_token);",
+          "    }",
+          "    if (response.session_token) {",
+          "        pm.environment.set('otp_session_token', response.session_token);",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  ],
+  "auth": null,
+  "protocolProfileBehavior": {}
+}
