@@ -1,15 +1,12 @@
-from flask import Flask, jsonify, request
+# app/__init__.py
+from flask import Flask
 from flask_cors import CORS
-import logging
-from logging.handlers import RotatingFileHandler
-import os
-from datetime import datetime
-import uuid
-from config import config
 from .extensions import db, bcrypt, cors, migrate, jwt
+from .models import *  # Import all models
+from config import config
+import os
 
 def create_app(config_name='default'):
-    """Application factory pattern"""
     app = Flask(__name__)
     
     # Load configuration
@@ -22,60 +19,37 @@ def create_app(config_name='default'):
     migrate.init_app(app, db)
     jwt.init_app(app)
     
-    # Create upload folder
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    
-    # Configure logging
-    if not app.debug:
-        file_handler = RotatingFileHandler(
-            'money_transfer.log',
-            maxBytes=10240,
-            backupCount=10
-        )
-        file_handler.setFormatter(logging.Formatter(
-            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
-        ))
-        file_handler.setLevel(logging.INFO)
-        app.logger.addHandler(file_handler)
-        app.logger.setLevel(logging.INFO)
-        app.logger.info('Money Transfer App startup')
-    
-    # Request ID middleware
-    @app.before_request
-    def assign_request_id():
-        request.id = str(uuid.uuid4())
-    
     # Register blueprints
     from .auth.routes import auth_bp
     from .Routes.admin_routes import admin_bp
-    from .Routes.beneficiaries_routes import beneficiaries_bp
     from .Routes.user_routes import user_bp
     from .Routes.wallet_routes import wallet_bp
+    from .Routes.beneficiaries_routes import beneficiaries_bp
     from .Routes.otp_routes import otp_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
-    app.register_blueprint(beneficiaries_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(wallet_bp)
+    app.register_blueprint(beneficiaries_bp)
     app.register_blueprint(otp_bp)
+    
+    # Create uploads directory
+    uploads_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+    
+    # Create tables
+    with app.app_context():
+        db.create_all()
     
     # Error handlers
     @app.errorhandler(404)
     def not_found(error):
-        return jsonify({'error': 'Resource not found'}), 404
+        return {'message': 'Resource not found'}, 404
     
     @app.errorhandler(500)
     def internal_error(error):
-        app.logger.error(f'Server Error: {error}')
-        return jsonify({'error': 'Internal server error'}), 500
-    
-    @app.errorhandler(401)
-    def unauthorized(error):
-        return jsonify({'error': 'Unauthorized access'}), 401
-    
-    @app.errorhandler(403)
-    def forbidden(error):
-        return jsonify({'error': 'Forbidden'}), 403
+        db.session.rollback()
+        return {'message': 'Internal server error'}, 500
     
     return app

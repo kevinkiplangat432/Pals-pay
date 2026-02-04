@@ -1,3 +1,4 @@
+# manage.py - Complete version
 import os
 from flask_script import Manager, Shell
 from flask_migrate import MigrateCommand
@@ -128,5 +129,6 @@ def seed_data():
     
     print("Database seeding completed!")
 
+# THIS WAS MISSING:
 if __name__ == '__main__':
     manager.run()
