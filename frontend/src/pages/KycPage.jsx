@@ -4,7 +4,7 @@ import {
   clearUserMessages,
   fetchKycStatus,
   submitKyc,
-} from "../features/user/userSlice";
+} from "../features/profileSlice";
 
 export default function KycPage() {
   const dispatch = useDispatch();
@@ -23,7 +23,7 @@ export default function KycPage() {
     dispatch(fetchKycStatus());
   }, [dispatch]);
 
-  function onChange(e) {
+  function handleChange(e) {
     dispatch(clearUserMessages());
     const { name, value, files } = e.target;
 
@@ -33,7 +33,7 @@ export default function KycPage() {
     }));
   }
 
-  function onSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault();
     dispatch(submitKyc(form));
   }
@@ -64,7 +64,7 @@ export default function KycPage() {
     
         <div className="rounded-2xl border bg-white p-5 shadow-sm">
           <h2 className="mb-3 text-sm font-semibold text-slate-700">
-            Current Status
+            Current Kyc Status
           </h2>
 
           {kyc ? (
@@ -101,7 +101,7 @@ export default function KycPage() {
             Submit Documents
           </h2>
 
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">
                 Document Type
@@ -109,7 +109,7 @@ export default function KycPage() {
               <input
                 name="document_type"
                 value={form.document_type}
-                onChange={onChange}
+                onChange={handleChange}
                 placeholder="e.g. national_id, passport"
                 className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300"
               />
@@ -122,7 +122,7 @@ export default function KycPage() {
               <input
                 name="document_number"
                 value={form.document_number}
-                onChange={onChange}
+                onChange={handleChange}
                 placeholder="Document number"
                 className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300"
               />
@@ -135,7 +135,7 @@ export default function KycPage() {
               <input
                 type="file"
                 name="front_document"
-                onChange={onChange}
+                onChange={handleChange}
                 className="block w-full text-sm text-slate-700"
               />
             </div>
@@ -147,7 +147,7 @@ export default function KycPage() {
               <input
                 type="file"
                 name="back_document"
-                onChange={onChange}
+                onChange={handleChange}
                 className="block w-full text-sm text-slate-700"
               />
             </div>
@@ -159,7 +159,7 @@ export default function KycPage() {
               <input
                 type="file"
                 name="selfie"
-                onChange={onChange}
+                onChange={handleChange}
                 className="block w-full text-sm text-slate-700"
               />
             </div>
