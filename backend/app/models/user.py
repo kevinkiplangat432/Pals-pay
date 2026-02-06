@@ -1,7 +1,8 @@
-# models/user.py - Updated with international fields
+# models/user.py - Updated with account relationship
 from datetime import datetime, timezone, timedelta
+from decimal import Decimal
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 import uuid
 from ..extensions import db
 from .enums import KYCStatus
@@ -30,6 +31,10 @@ class User(db.Model):
     language = db.Column(db.String(5), default='en', nullable=False)  # en, sw, fr, etc.
     timezone = db.Column(db.String(50), default='Africa/Nairobi', nullable=False)
     
+    # Legal entity information
+    nationality = db.Column(db.String(2), nullable=True)
+    residency_country = db.Column(db.String(2), nullable=True)
+    
     # Security
     password_hash = db.Column(db.String(255), nullable=False)
     
@@ -48,23 +53,50 @@ class User(db.Model):
     kyc_status = db.Column(db.Enum(KYCStatus, name="kyc_status_enum"), default=KYCStatus.unverified, nullable=False)
     kyc_level = db.Column(db.Integer, default=0, nullable=False)  # 0=basic, 1=verified, 2=enhanced
     
+    # Risk and compliance
+    risk_score = db.Column(db.Integer, default=0, nullable=False)
+    flags = db.Column(JSONB, default={}, nullable=True)
+    
+    # For velocity controls
+    last_ip_address = db.Column(db.String(45), nullable=True)
+    last_device_id = db.Column(db.String(100), nullable=True)
+    
     # Timestamps
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=db.func.now(), nullable=True)
     last_login_at = db.Column(db.DateTime(timezone=True), nullable=True)
     last_location_update = db.Column(db.DateTime(timezone=True), nullable=True)
+    last_kyc_review = db.Column(db.DateTime(timezone=True), nullable=True)
     
     # Relationships
     wallet = db.relationship('Wallet', backref='user', uselist=False, cascade='all, delete-orphan')
     kyc_verification = db.relationship('KYCVerification', backref='user', uselist=False, cascade='all, delete-orphan')
     payment_methods = db.relationship('PaymentMethod', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    account_links = db.relationship('UserAccount', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    funding_sources = db.relationship('FundingSource', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    payout_destinations = db.relationship('PayoutDestination', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     
     # Indexes
     __table_args__ = (
         db.Index('idx_users_country_region', 'country_code', 'region'),
         db.Index('idx_users_phone_full', 'phone_country_code', 'phone_number'),
         db.Index('idx_users_language_currency', 'language', 'preferred_currency'),
+        db.Index('idx_users_kyc_level', 'kyc_status', 'kyc_level'),
+        db.Index('idx_users_risk_score', 'risk_score'),
     )
+    
+    @property
+    def primary_account(self):
+        """Get user's primary account"""
+        from .user_account import UserAccount
+        link = UserAccount.query.filter_by(user_id=self.id, is_primary=True).first()
+        return link.account if link else None
+    
+    @property
+    def all_accounts(self):
+        """Get all accounts user has access to"""
+        from .user_account import UserAccount
+        return [link.account for link in self.account_links.filter_by(is_active=True).all()]
     
     def __init__(self, **kwargs):
         # Set default region based on country if not provided
@@ -77,6 +109,10 @@ class User(db.Model):
             from flask import current_app
             region_config = current_app.config['SUPPORTED_REGIONS'].get(kwargs['region'], {})
             kwargs['preferred_currency'] = region_config.get('default_currency', 'KES')
+        
+        # Set residency if not provided
+        if 'country_code' in kwargs and 'residency_country' not in kwargs:
+            kwargs['residency_country'] = kwargs['country_code']
         
         super().__init__(**kwargs)
         
@@ -112,9 +148,15 @@ class User(db.Model):
         if not self.is_verified:
             return {'allowed': False, 'reason': 'Account not verified'}
         
-        # KYC check based on transaction size
-        if amount > 10000 and self.kyc_status.value != 'verified':  # 10,000 in default currency
+        # KYC check based on transaction size and type
+        is_large_transfer = amount > Decimal('10000')  # 10,000 in default currency
+        is_cross_border = target_country and target_country != self.country_code
+        
+        if is_large_transfer and self.kyc_status.value != 'verified':
             return {'allowed': False, 'reason': 'KYC verification required for large transfers'}
+        
+        if is_cross_border and self.kyc_level < 1:
+            return {'allowed': False, 'reason': 'KYC level 1 required for cross-border transfers'}
         
         if self.wallet and self.wallet.status.value == 'frozen':
             return {'allowed': False, 'reason': 'Wallet is frozen'}
@@ -132,7 +174,7 @@ class User(db.Model):
         
         return {'allowed': True, 'reason': 'OK'}
     
-    def update_location(self, country_code, ip_address=None):
+    def update_location(self, country_code, ip_address=None, device_id=None):
         """Update user location based on IP or manual selection"""
         from app.services.region_service import RegionService
         
@@ -148,8 +190,14 @@ class User(db.Model):
                 self.preferred_currency = region_config.get('default_currency', 'KES')
             
             self.last_location_update = datetime.now(timezone.utc)
+        
+        # Update last known IP and device
+        if ip_address:
+            self.last_ip_address = ip_address
+        if device_id:
+            self.last_device_id = device_id
     
-    def to_dict(self, include_wallet=False, include_kyc=False):
+    def to_dict(self, include_wallet=False, include_kyc=False, include_accounts=False):
         data = {
             'id': self.id,
             'public_id': str(self.public_id),
@@ -167,14 +215,18 @@ class User(db.Model):
             'preferred_currency': self.preferred_currency,
             'language': self.language,
             'timezone': self.timezone,
+            'nationality': self.nationality,
+            'residency_country': self.residency_country,
             'is_admin': self.is_admin,
             'is_active': self.is_active,
             'is_verified': self.is_verified,
             'kyc_status': self.kyc_status.value,
             'kyc_level': self.kyc_level,
+            'risk_score': self.risk_score,
             'last_login_at': self.last_login_at.isoformat() if self.last_login_at else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'last_location_update': self.last_location_update.isoformat() if self.last_location_update else None
         }
         
         if include_wallet and self.wallet:
@@ -183,4 +235,10 @@ class User(db.Model):
         if include_kyc and self.kyc_verification:
             data['kyc'] = self.kyc_verification.to_dict()
             
+        if include_accounts:
+            data['accounts'] = [account.to_dict() for account in self.all_accounts]
+            primary = self.primary_account
+            if primary:
+                data['primary_account_id'] = primary.id
+        
         return data

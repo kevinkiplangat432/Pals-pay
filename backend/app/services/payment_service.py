@@ -8,7 +8,7 @@ from ..extensions import db
 from app.models import Transaction, Wallet, PaymentMethod, AuditLog
 from app.models.enums import TransactionStatus, TransactionType, PaymentProvider
 
-class DarajaPaymentService:
+class PaymentService:
     """
     Service for handling MPesa payments via Safaricom Daraja API
     """
