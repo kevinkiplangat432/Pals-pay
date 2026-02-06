@@ -6,7 +6,7 @@ import paymentMethodsReducer from './features/paymentMethodsSlice';
 import walletReducer from './features/walletSlice';
 import beneficiariesReducer from './features/beneficiariesSlice';
 import transactionsReducer from './features/transactionsSlice';
-import transfersReducer from './features/transfersSlice';
+
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +16,5 @@ export const store = configureStore({
     wallet: walletReducer,
     beneficiaries: beneficiariesReducer,
     transactions: transactionsReducer,
-    transfers: transfersReducer,
   },
 });
