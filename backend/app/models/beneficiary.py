@@ -51,7 +51,6 @@ class Beneficiary(db.Model):
         db.UniqueConstraint('user_id', 'beneficiary_wallet_id', name='unique_user_beneficiary'),
         db.Index('idx_beneficiaries_user_category', 'user_id', 'category'),
         db.Index('idx_beneficiaries_last_transfer', 'last_transfer_at'),
-        db.CheckConstraint('user_id != beneficiary_wallet.user_id', name='check_not_self_beneficiary'),
     )
     
     def update_statistics(self, amount):
