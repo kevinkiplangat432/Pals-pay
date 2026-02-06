@@ -85,7 +85,7 @@ def initiate_local_transfer():
         receiver_wallet_id = beneficiary.beneficiary_wallet_id
         
         can_send = beneficiary.can_send(amount)
-        if not can_send['allowed']:
+        if not can_send['allowed']: #
             return jsonify({'message': can_send['reason']}), 400
     
     result = TransferService.initiate_local_transfer(
@@ -100,7 +100,7 @@ def initiate_local_transfer():
     if result['success']:
         return jsonify(result), 200
     else:
-        return jsonify(result), 400
+        return jsonify(result), 400  
 
 @transfer_bp.route('/international/quote', methods=['POST'])
 @token_required
@@ -126,7 +126,7 @@ def get_international_transfer_quote():
     except:
         return jsonify({'message': 'Invalid amount'}), 400
     
-    quote = TransferService.get_international_transfer_quote(
+    quote = TransferService.get_international_transfer_quote(  #t
         sender_user_id=user.id,
         amount=amount_decimal,
         source_currency=source_currency,
@@ -135,7 +135,7 @@ def get_international_transfer_quote():
         receiver_details=receiver_details
     )
     
-    if not quote['success']:
+    if not quote['success']:  # If the quote retrieval was not successful, we return a 400 Bad Request with the message from the quote. This allows the frontend to display the specific reason why the quote could not be generated (e.g., unsupported currency pair, compliance issues, etc.) and take appropriate actions (e.g., ask the user to change the amount or currency).
         return jsonify({'message': quote['message']}), 400
     
     return jsonify(quote), 200
@@ -149,7 +149,7 @@ def initiate_international_transfer():
     
     quote_id = data.get('quote_id')
     receiver_details = data.get('receiver_details')
-    funding_source_id = data.get('funding_source_id')
+    funding_source_id = data.get('funding_source_id')  #
     
     if not quote_id or not receiver_details:
         return jsonify({'message': 'Quote ID and receiver details required'}), 400
@@ -189,7 +189,7 @@ def check_international_compliance():
     except:
         return jsonify({'message': 'Invalid amount'}), 400
     
-    compliance_check = ComplianceService.check_international_transfer(
+    compliance_check = ComplianceService.check_international_transfer( # This endpoint allows the frontend to check if an international transfer is compliant with regulations before the user goes through the process of initiating the transfer. The frontend can use this information to inform the user about any potential issues (e.g., if the transfer exceeds limits, if the destination country has restrictions, etc.) and prevent them from going through a process that would ultimately fail due to compliance issues.
         source_country=source_country,
         destination_country=destination_country,
         amount=amount_decimal,
@@ -290,7 +290,7 @@ def get_transfer_history():
 def get_transfer_summary():
     user = request.current_user
     
-    days = request.args.get('days', 30, type=int)
+    days = request.args.get('days', 30, type=int) # This endpoint provides a summary of the user's transfer activity over a specified number of days (defaulting to 30). The frontend can use this information to display insights to the user about their transfer habits, such as total amount sent/received, number of transfers, average transfer amount, etc. This can help users understand their financial behavior and make informed decisions about their transfers.
     
     summary = TransferService.get_user_transfer_summary(
         user_id=user.id,

@@ -13,7 +13,7 @@ payment_bp = Blueprint('payments', __name__, url_prefix='/api/v1/payments')
 @payment_bp.route('/mpesa/deposit', methods=['POST'])
 @token_required
 def mpesa_deposit():
-    data = request.get_json()
+    data = request.get_json()  
     
     amount = data.get('amount')
     phone_number = data.get('phone_number')
@@ -87,7 +87,7 @@ def mpesa_callback():
         data = request.get_json()
         current_app.logger.info(f"MPesa Callback Received: {data}")
         
-        callback_data = data.get('Body', {}).get('stkCallback', {})
+        callback_data = data.get('Body', {}).get('stkCallback', {})  # a callback is a confirmation of payment
         checkout_request_id = callback_data.get('CheckoutRequestID')
         result_code = callback_data.get('ResultCode')
         result_desc = callback_data.get('ResultDesc')
@@ -141,8 +141,8 @@ def mpesa_callback():
             transaction.status = TransactionStatus.failed
             transaction.metadata = {
                 **transaction.metadata,
-                'callback_data': callback_data,
-                'failure_reason': result_desc
+                'callback_data': callback_data,  # Storing the full callback data will help us debug and analyze failed payments in the future
+                'failure_reason': result_desc  # This will help us understand why the payment failed and take appropriate actions
             }
             
             AuditLog.log_system_action(
@@ -258,7 +258,7 @@ def card_deposit():
     data = request.get_json()
     
     amount = data.get('amount')
-    card_token = data.get('card_token')
+    card_token = data.get('card_token')  # In a real implementation, this would be a token representing the card details securely stored by a payment gateway like Stripe or PayPal. The frontend would send this token after the user enters their card details and the payment gateway processes it.
     
     if not amount or not card_token:
         return jsonify({'message': 'Amount and card token required'}), 400
@@ -289,7 +289,7 @@ def get_payment_status(reference):
     user = request.current_user
     
     transaction = Transaction.query.filter_by(
-        external_reference=reference
+        external_reference=reference  # The external_reference field is used to store the unique identifier from the payment provider (e.g., MPesa receipt number, Stripe charge ID, etc.) that we can use to look up the transaction in our system when the user wants to check the status of their payment. This allows us to correlate the payment provider's data with our internal transaction records.
     ).first()
     
     if not transaction:

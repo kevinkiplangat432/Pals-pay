@@ -16,7 +16,7 @@ from .decorators import token_required
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/v1/auth')
 
-PHONE_REGEX = r'^\+?[1-9]\d{1,14}$'
+PHONE_REGEX = r'^\+?[1-9]\d{1,14}$'  # E.164 format: optional +, followed by country code and subscriber number, total length up to 15 digits. This regex allows for international phone numbers with an optional leading + sign, ensuring that the number starts with a non-zero digit and is between 2 and 15 digits long (including country code). It does not allow for spaces, dashes, or parentheses, which are often used in formatted phone numbers, so the frontend should ensure that the phone number is sent in a clean format without any formatting characters.
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -97,7 +97,7 @@ def register():
         
         db.session.commit()
         
-        access_token = create_access_token(
+        access_token = create_access_token(  # The access token is created with the user's ID as the identity and additional claims that include the user's admin status, KYC status, and account ID. This allows the frontend to easily access this information from the token without needing to make additional API calls to get the user's details. The token can be used for authenticated requests to protected endpoints in the API.
             identity=str(user.id),
             additional_claims={
                 'type': 'access',
@@ -107,7 +107,7 @@ def register():
             }
         )
         
-        refresh_token = create_refresh_token(identity=str(user.id))
+        refresh_token = create_refresh_token(identity=str(user.id))  #refresh token is created with the user's ID as the identity. The refresh token can be used to obtain a new access token when the current access token expires, allowing the user to stay logged in without having to re-enter their credentials. The refresh token should be stored securely on the client side and sent to the /refresh endpoint when the access token needs to be renewed.
         
         AuditLog.log_user_action(
             actor_id=user.id,
