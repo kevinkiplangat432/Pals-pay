@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useContext, useState, useRef, useEffect } from 'react';
-import { AuthContext } from '../../contexts/AuthContext';
+import { AuthContext } from '../../contexts/authContext';
 
-const AdminHeader = ({ toggleSidebar, sidebarOpen }) => {
+const AdminHeader = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
