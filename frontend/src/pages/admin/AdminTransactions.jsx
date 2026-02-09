@@ -193,12 +193,12 @@ const AdminTransactions = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-bold text-gray-900">
-                          ${parseFloat(tx.amount).toLocaleString()}
+                          ${Number(tx.amount || 0).toLocaleString()}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">
-                          ${parseFloat(tx.fee).toLocaleString()}
+                          ${Number(tx.fee || 0).toLocaleString()}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -211,10 +211,10 @@ const AdminTransactions = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {format(new Date(tx.created_at), 'MMM dd, yyyy HH:mm')}
+                        {tx?.created_at ? format(new Date(tx.created_at), 'MMM dd, yyyy HH:mm') : 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {tx.status === 'completed' && tx.status !== 'reversed' && (
+                        {tx.status === 'completed' && (
                           <button
                             onClick={() => handleReverseTransaction(tx.id)}
                             disabled={reversingTxId === tx.id}

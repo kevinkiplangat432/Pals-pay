@@ -58,6 +58,10 @@ const AdminAnalytics = () => {
   if (!profitTrends) return null;
 
   const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'];
+  const safe = (v) => Number(v ?? 0);
+  const trends = profitTrends.daily_trends || [];
+  const byType = profitTrends.by_transaction_type || [];
+  const topUsers = profitTrends.top_users || [];
 
   return (
     <div className="space-y-6">
@@ -84,19 +88,19 @@ const AdminAnalytics = () => {
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Revenue & Transaction Trends</h2>
         <ResponsiveContainer width="100%" height={400}>
-          <ComposedChart data={profitTrends.daily_trends}>
+          <ComposedChart data={trends}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="date"
-              tickFormatter={(date) => format(new Date(date), 'MMM dd')}
+              tickFormatter={(date) => (date ? format(new Date(date), 'MMM dd') : '')}
             />
             <YAxis yAxisId="left" label={{ value: 'Revenue ($)', angle: -90, position: 'insideLeft' }} />
             <YAxis yAxisId="right" orientation="right" label={{ value: 'Count', angle: 90, position: 'insideRight' }} />
             <Tooltip
-              labelFormatter={(date) => format(new Date(date), 'MMM dd, yyyy')}
+              labelFormatter={(date) => (date ? format(new Date(date), 'MMM dd, yyyy') : '')}
               formatter={(value, name) => {
                 if (name === 'Transaction Count') return [value, name];
-                return [`$${parseFloat(value).toLocaleString()}`, name];
+                return [`$${Number(value ?? 0).toLocaleString()}`, name];
               }}
             />
             <Legend />
@@ -126,7 +130,7 @@ const AdminAnalytics = () => {
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Daily Transaction Volume</h2>
         <ResponsiveContainer width="100%" height={350}>
-          <AreaChart data={profitTrends.daily_trends}>
+          <AreaChart data={trends}>
             <defs>
               <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
@@ -136,12 +140,12 @@ const AdminAnalytics = () => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="date"
-              tickFormatter={(date) => format(new Date(date), 'MMM dd')}
+              tickFormatter={(date) => (date ? format(new Date(date), 'MMM dd') : '')}
             />
             <YAxis />
             <Tooltip
-              labelFormatter={(date) => format(new Date(date), 'MMM dd, yyyy')}
-              formatter={(value) => `$${parseFloat(value).toLocaleString()}`}
+              labelFormatter={(date) => (date ? format(new Date(date), 'MMM dd, yyyy') : '')}
+              formatter={(value) => `$${Number(value ?? 0).toLocaleString()}`}
             />
             <Legend />
             <Area 
@@ -165,7 +169,7 @@ const AdminAnalytics = () => {
           <ResponsiveContainer width="100%" height={350}>
             <PieChart>
               <Pie
-                data={profitTrends.by_transaction_type}
+                data={byType}
                 dataKey="total_fees"
                 nameKey="type"
                 cx="50%"
@@ -175,7 +179,7 @@ const AdminAnalytics = () => {
                 label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
                 labelLine={true}
               >
-                {profitTrends.by_transaction_type.map((entry, index) => (
+                {byType.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
@@ -186,7 +190,7 @@ const AdminAnalytics = () => {
             </PieChart>
           </ResponsiveContainer>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            {profitTrends.by_transaction_type.map((item, index) => (
+            {byType.map((item, index) => (
               <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -198,7 +202,7 @@ const AdminAnalytics = () => {
                   </div>
                   <span className="text-xs font-semibold text-gray-500">{item.transaction_count}</span>
                 </div>
-                <p className="text-lg font-bold text-gray-900 mt-1">${item.total_fees.toFixed(2)}</p>
+                <p className="text-lg font-bold text-gray-900 mt-1">${Number(item.total_fees ?? 0).toFixed(2)}</p>
               </div>
             ))}
           </div>
@@ -208,9 +212,9 @@ const AdminAnalytics = () => {
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Top Revenue Generators</h2>
           <div className="space-y-3 max-h-[450px] overflow-y-auto">
-            {profitTrends.top_users.slice(0, 10).map((user, index) => {
-              const maxFees = profitTrends.top_users[0].total_fees;
-              const percentage = (user.total_fees / maxFees) * 100;
+            {topUsers.slice(0, 10).map((user, index) => {
+              const maxFees = topUsers[0] ? Number(topUsers[0].total_fees ?? 1) : 1;
+              const percentage = maxFees > 0 ? (Number(user.total_fees ?? 0) / maxFees) * 100 : 0;
               return (
                 <div
                   key={user.user_id}
@@ -233,9 +237,9 @@ const AdminAnalytics = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-indigo-600">
-                        ${user.total_fees.toFixed(2)}
+                        ${Number(user.total_fees ?? 0).toFixed(2)}
                       </p>
-                      <p className="text-xs text-gray-500">{user.transaction_count} txns</p>
+                      <p className="text-xs text-gray-500">{Number(user.transaction_count ?? 0)} txns</p>
                     </div>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">

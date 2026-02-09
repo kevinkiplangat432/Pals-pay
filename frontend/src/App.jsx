@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -18,8 +19,9 @@ const FAQs = () => <div className="p-10">FAQs Page</div>;
 
 export default function App() {
   return (
-    <Router>
-      <Routes>
+    <AuthProvider>
+      <Router>
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -42,6 +44,7 @@ export default function App() {
           <Route path="analytics" element={<AdminAnalytics />} />
         </Route>
       </Routes>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }

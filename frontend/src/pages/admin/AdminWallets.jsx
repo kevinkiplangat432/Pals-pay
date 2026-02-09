@@ -167,7 +167,7 @@ const AdminWallets = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-bold text-gray-900">
-                          ${parseFloat(wallet.balance).toLocaleString()}
+                          ${Number(wallet?.balance || 0).toLocaleString()}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -185,7 +185,7 @@ const AdminWallets = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {format(new Date(wallet.created_at), 'MMM dd, yyyy')}
+                        {wallet?.created_at ? format(new Date(wallet.created_at), 'MMM dd, yyyy') : 'N/A'}
                       </td>
                     </tr>
                   ))}

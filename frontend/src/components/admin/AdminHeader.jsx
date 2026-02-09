@@ -1,15 +1,27 @@
 import { useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
+import { useContext, useState, useRef, useEffect } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 
 const AdminHeader = ({ toggleSidebar, sidebarOpen }) => {
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
+
+  useEffect(() => {
+    const onClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 z-10">
@@ -69,27 +81,40 @@ const AdminHeader = ({ toggleSidebar, sidebarOpen }) => {
               <p className="text-xs text-gray-500">Administrator</p>
             </div>
             
-            <div className="relative group">
-              <button className="flex items-center space-x-2 focus:outline-none">
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen((s) => !s)}
+                aria-expanded={menuOpen}
+                aria-haspopup="true"
+                className="flex items-center space-x-2 focus:outline-none"
+              >
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">
                   {user?.username?.[0]?.toUpperCase() || 'A'}
                 </div>
               </button>
-              
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 hidden group-hover:block">
-                <button
-                  onClick={() => navigate('/admin/profile')}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Profile Settings
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                >
-                  Logout
-                </button>
-              </div>
+
+              {menuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate('/admin/profile');
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Profile Settings
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

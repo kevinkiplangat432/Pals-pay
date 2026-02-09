@@ -178,7 +178,7 @@ const AdminUsers = () => {
                             user.kyc_status
                           )}`}
                         >
-                          {user.kyc_status?.replace('_', ' ').toUpperCase()}
+                          {user.kyc_status ? user.kyc_status.split('_').join(' ').toUpperCase() : 'NOT STARTED'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -193,7 +193,7 @@ const AdminUsers = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {format(new Date(user.created_at), 'MMM dd, yyyy')}
+                        {user?.created_at ? format(new Date(user.created_at), 'MMM dd, yyyy') : 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <button

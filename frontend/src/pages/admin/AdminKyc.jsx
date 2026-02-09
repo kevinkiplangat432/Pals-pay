@@ -100,7 +100,7 @@ const AdminKyc = () => {
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Submitted:</span>
                   <span className="text-sm text-gray-900">
-                    {format(new Date(kyc.created_at), 'MMM dd, yyyy HH:mm')}
+                    {kyc?.created_at ? format(new Date(kyc.created_at), 'MMM dd, yyyy HH:mm') : 'N/A'}
                   </span>
                 </div>
               </div>

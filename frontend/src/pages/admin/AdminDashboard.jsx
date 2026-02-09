@@ -53,31 +53,33 @@ const AdminDashboard = () => {
 
   const { users, wallets, transactions } = systemStats;
 
+  const safe = (v) => Number(v ?? 0);
+
   // Prepare data for charts
   const userDistributionData = [
-    { name: 'Active', value: users.active, color: '#10b981' },
-    { name: 'Inactive', value: users.total - users.active, color: '#ef4444' },
+    { name: 'Active', value: safe(users.active), color: '#10b981' },
+    { name: 'Inactive', value: safe(users.total) - safe(users.active), color: '#ef4444' },
   ];
 
   const kycStatusData = [
-    { name: 'Verified', value: users.kyc_verified, color: '#10b981' },
-    { name: 'Pending', value: users.kyc_pending, color: '#f59e0b' },
-    { name: 'Rejected', value: users.kyc_rejected, color: '#ef4444' },
-    { name: 'Not Started', value: users.total - users.kyc_verified - users.kyc_pending - users.kyc_rejected, color: '#6b7280' },
+    { name: 'Verified', value: safe(users.kyc_verified), color: '#10b981' },
+    { name: 'Pending', value: safe(users.kyc_pending), color: '#f59e0b' },
+    { name: 'Rejected', value: safe(users.kyc_rejected), color: '#ef4444' },
+    { name: 'Not Started', value: Math.max(0, safe(users.total) - safe(users.kyc_verified) - safe(users.kyc_pending) - safe(users.kyc_rejected)), color: '#6b7280' },
   ];
 
   const transactionMetrics = [
-    { metric: 'Volume', today: transactions.today_volume, last30: transactions.volume_last_30_days / 30 },
-    { metric: 'Count', today: transactions.today_count, last30: transactions.total_last_30_days / 30 },
-    { metric: 'Fees', today: transactions.today_fees, last30: transactions.fees_last_30_days / 30 },
+    { metric: 'Volume', today: safe(transactions.today_volume), last30: safe(transactions.volume_last_30_days) / 30 },
+    { metric: 'Count', today: safe(transactions.today_count), last30: safe(transactions.total_last_30_days) / 30 },
+    { metric: 'Fees', today: safe(transactions.today_fees), last30: safe(transactions.fees_last_30_days) / 30 },
   ];
 
   const systemHealthData = [
-    { subject: 'Users', value: (users.active / users.total) * 100, fullMark: 100 },
-    { subject: 'KYC', value: (users.kyc_verified / users.total) * 100, fullMark: 100 },
-    { subject: 'Transactions', value: (transactions.completed_last_30_days / transactions.total_last_30_days) * 100, fullMark: 100 },
-    { subject: 'Wallets', value: wallets.total > 0 ? 95 : 0, fullMark: 100 },
-    { subject: 'Revenue', value: transactions.fees_last_30_days > 1000 ? 85 : 50, fullMark: 100 },
+    { subject: 'Users', value: safe(users.total) > 0 ? (safe(users.active) / safe(users.total)) * 100 : 0, fullMark: 100 },
+    { subject: 'KYC', value: safe(users.total) > 0 ? (safe(users.kyc_verified) / safe(users.total)) * 100 : 0, fullMark: 100 },
+    { subject: 'Transactions', value: safe(transactions.total_last_30_days) > 0 ? (safe(transactions.completed_last_30_days) / safe(transactions.total_last_30_days)) * 100 : 0, fullMark: 100 },
+    { subject: 'Wallets', value: safe(wallets.total) > 0 ? 95 : 0, fullMark: 100 },
+    { subject: 'Revenue', value: safe(transactions.fees_last_30_days) > 1000 ? 85 : 50, fullMark: 100 },
   ];
 
   const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'];
@@ -98,26 +100,26 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
           title="Total Users"
-          value={users.total}
+          value={safe(users.total)}
           icon="👥"
           color="bg-blue-500"
         />
         <StatsCard
           title="Active Users"
-          value={users.active}
+          value={safe(users.active)}
           icon="✅"
           color="bg-green-500"
-          subtitle={`${((users.active / users.total) * 100).toFixed(1)}% of total`}
+          subtitle={`${safe(users.total) > 0 ? ((safe(users.active) / safe(users.total)) * 100).toFixed(1) : '0.0'}% of total`}
         />
         <StatsCard
           title="Total Balance"
-          value={`$${wallets.total_balance.toLocaleString()}`}
+          value={`$${safe(wallets.total_balance).toLocaleString()}`}
           icon="💵"
           color="bg-emerald-500"
         />
         <StatsCard
           title="Today's Revenue"
-          value={`$${transactions.today_fees.toLocaleString()}`}
+          value={`$${safe(transactions.today_fees).toLocaleString()}`}
           icon="💰"
           color="bg-cyan-500"
         />
@@ -244,17 +246,17 @@ const AdminDashboard = () => {
         <ResponsiveContainer width="100%" height={250}>
           <AreaChart
             data={[
-              { name: 'Wallets', value: wallets.total, category: 'count' },
-              { name: 'Avg Balance', value: wallets.average_balance, category: 'amount' },
-              { name: 'Total Balance', value: wallets.total_balance / 1000, category: 'amount' },
-              { name: 'Today Txns', value: transactions.today_count, category: 'count' },
-              { name: '30-Day Txns', value: transactions.total_last_30_days / 30, category: 'count' },
+              { name: 'Wallets', value: safe(wallets.total), category: 'count' },
+              { name: 'Avg Balance', value: safe(wallets.average_balance), category: 'amount' },
+              { name: 'Total Balance', value: safe(wallets.total_balance) / 1000, category: 'amount' },
+              { name: 'Today Txns', value: safe(transactions.today_count), category: 'count' },
+              { name: '30-Day Txns', value: safe(transactions.total_last_30_days) / 30, category: 'count' },
             ]}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis />
-            <Tooltip formatter={(value) => parseFloat(value).toFixed(2)} />
+            <Tooltip formatter={(value) => parseFloat(value || 0).toFixed(2)} />
             <Legend />
             <Area type="monotone" dataKey="value" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} />
           </AreaChart>
@@ -268,39 +270,39 @@ const AdminDashboard = () => {
           <div>
             <p className="text-indigo-200 text-sm mb-1">Total Fees (Last 30 Days)</p>
             <p className="text-3xl font-bold">
-              ${transactions.fees_last_30_days.toLocaleString()}
+              ${safe(transactions.fees_last_30_days).toLocaleString()}
             </p>
             <div className="mt-2 flex items-center space-x-2">
               <span className="text-sm">📈</span>
-              <span className="text-sm text-indigo-200">
-                Avg: ${(transactions.fees_last_30_days / 30).toFixed(2)}/day
+                <span className="text-sm text-indigo-200">
+                Avg: ${(safe(transactions.fees_last_30_days) / 30).toFixed(2)}/day
               </span>
             </div>
           </div>
           <div>
             <p className="text-indigo-200 text-sm mb-1">Completed Transactions</p>
             <p className="text-3xl font-bold">
-              {transactions.completed_last_30_days.toLocaleString()}
+              {safe(transactions.completed_last_30_days).toLocaleString()}
             </p>
             <div className="mt-2 flex items-center space-x-2">
               <span className="text-sm">✅</span>
-              <span className="text-sm text-indigo-200">
-                Success Rate: {((transactions.completed_last_30_days / transactions.total_last_30_days) * 100).toFixed(1)}%
+                <span className="text-sm text-indigo-200">
+                Success Rate: {safe(transactions.total_last_30_days) > 0 ? ((safe(transactions.completed_last_30_days) / safe(transactions.total_last_30_days)) * 100).toFixed(1) : '0.0'}%
               </span>
             </div>
           </div>
           <div>
             <p className="text-indigo-200 text-sm mb-1">Average Fee per Transaction</p>
-            <p className="text-3xl font-bold">
+                <p className="text-3xl font-bold">
               $
-              {transactions.completed_last_30_days > 0
-                ? (transactions.fees_last_30_days / transactions.completed_last_30_days).toFixed(2)
+              {safe(transactions.completed_last_30_days) > 0
+                ? (safe(transactions.fees_last_30_days) / safe(transactions.completed_last_30_days)).toFixed(2)
                 : '0.00'}
             </p>
             <div className="mt-2 flex items-center space-x-2">
               <span className="text-sm">💎</span>
-              <span className="text-sm text-indigo-200">
-                Volume: ${transactions.volume_last_30_days.toLocaleString()}
+                <span className="text-sm text-indigo-200">
+                Volume: ${safe(transactions.volume_last_30_days).toLocaleString()}
               </span>
             </div>
           </div>
