@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 
 const AdminKyc = () => {
   const dispatch = useDispatch();
-  const { kycVerifications, total, pages, currentPage, loading, error } = useSelector(
+  const { kycVerifications, total, loading, error } = useSelector(
     (state) => state.adminKyc
   );
 
