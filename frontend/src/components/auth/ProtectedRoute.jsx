@@ -1,10 +1,10 @@
 import { Navigate } from "react-router-dom";
 import { useContext } from "react";
-import { AuthContext } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import LoadingSpinner from "../common/LoadingSpinner";
 
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
-  const { user, isAuthenticated, loading } = useContext(AuthContext);
+  const { user, isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return <LoadingSpinner />;
