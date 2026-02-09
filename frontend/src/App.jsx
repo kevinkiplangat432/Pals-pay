@@ -43,6 +43,7 @@ export default function App() {
           <Route path="transactions" element={<AdminTransactions />} />
           <Route path="kyc" element={<AdminKyc />} />
           <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="profile" element={<div className="p-8"><h1 className="text-2xl font-bold">Admin Profile</h1><p className="mt-4">Profile page coming soon...</p></div>} />
         </Route>
       </Routes>
       </Router>
