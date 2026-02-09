@@ -33,7 +33,7 @@ class Config:
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', 'password-salt-change-in-production')
     
     # CORS
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(',')
+    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://localhost:5173,http://localhost:5174').split(',')
     
     # Logging
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
