@@ -1,262 +1,269 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  loadTransactions,
-  reverseTransactionAction,
-  setFilters,
-} from '../../store/slices/adminTransactionsSlice';
-import { format } from 'date-fns';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorMessage from "../../components/common/ErrorMessage";
+import EmptyState from "../../components/common/EmptyState";
+import { loadTransactions, setFilters } from "../../store/slices/adminTransactionsSlice";
 
 const AdminTransactions = () => {
   const dispatch = useDispatch();
-  const { transactions, total, pages, currentPage, loading, error, filters } = useSelector(
+  const { transactions, loading, error, filters, total, pages, currentPage } = useSelector(
     (state) => state.adminTransactions
   );
 
-  const [otpCode, setOtpCode] = useState('');
-  const [reversingTxId, setReversingTxId] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     dispatch(loadTransactions(filters));
   }, [dispatch, filters]);
 
-  const handleFilterChange = (key, value) => {
-    dispatch(setFilters({ [key]: value, page: 1 }));
+  const handlePageChange = (page) => {
+    dispatch(setFilters({ page }));
   };
 
-  const handlePageChange = (newPage) => {
-    dispatch(setFilters({ page: newPage }));
+  const formatCurrency = (amount, currency = "KES") => {
+    return new Intl.NumberFormat("en-KE", {
+      style: "currency",
+      currency: currency,
+      minimumFractionDigits: 2,
+    }).format(amount);
   };
 
-  const handleReverseTransaction = async (txId) => {
-    const code = prompt('Enter OTP code to reverse this transaction:');
-    if (code) {
-      setReversingTxId(txId);
-      await dispatch(reverseTransactionAction({ txId, otpCode: code }));
-      setReversingTxId(null);
-      dispatch(loadTransactions(filters));
-    }
-  };
-
-  const getStatusBadge = (status) => {
-    const badges = {
-      completed: 'bg-green-100 text-green-800',
-      pending: 'bg-yellow-100 text-yellow-800',
-      failed: 'bg-red-100 text-red-800',
-      reversed: 'bg-purple-100 text-purple-800',
-    };
-    return badges[status] || badges.pending;
-  };
-
-  const getTypeBadge = (type) => {
-    const badges = {
-      transfer: 'bg-blue-100 text-blue-800',
-      deposit: 'bg-green-100 text-green-800',
-      withdrawal: 'bg-orange-100 text-orange-800',
-    };
-    return badges[type] || badges.transfer;
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-KE", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Transaction Management</h1>
-        <div className="text-sm text-gray-600">
-          Total Transactions: <span className="font-semibold">{total}</span>
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Transaction Management</h1>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-600">{total} transactions</span>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {showFilters && (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
-                value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                value={filters.status || ""}
+                onChange={(e) => dispatch(setFilters({ status: e.target.value || "", page: 1 }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="">All</option>
-                <option value="completed">Completed</option>
+                <option value="">All Status</option>
                 <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
                 <option value="failed">Failed</option>
                 <option value="reversed">Reversed</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
               <select
-                value={filters.type}
-                onChange={(e) => handleFilterChange('type', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                value={filters.type || ""}
+                onChange={(e) => dispatch(setFilters({ type: e.target.value || "", page: 1 }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="">All</option>
+                <option value="">All Types</option>
                 <option value="transfer">Transfer</option>
                 <option value="deposit">Deposit</option>
                 <option value="withdrawal">Withdrawal</option>
+                <option value="fee">Fee</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-              <input
-                type="date"
-                value={filters.start_date}
-                onChange={(e) => handleFilterChange('start_date', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-              <input
-                type="date"
-                value={filters.end_date}
-                onChange={(e) => handleFilterChange('end_date', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Min Amount</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Min Amount</label>
               <input
                 type="number"
-                value={filters.min_amount}
-                onChange={(e) => handleFilterChange('min_amount', e.target.value)}
-                placeholder="0.00"
-                step="0.01"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="0"
+                value={filters.min_amount || ""}
+                onChange={(e) => dispatch(setFilters({ min_amount: e.target.value, page: 1 }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Max Amount</label>
+              <input
+                type="number"
+                placeholder="Any"
+                value={filters.max_amount || ""}
+                onChange={(e) => dispatch(setFilters({ max_amount: e.target.value, page: 1 }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+              <input
+                type="date"
+                value={filters.start_date || ""}
+                onChange={(e) => dispatch(setFilters({ start_date: e.target.value, page: 1 }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+              <input
+                type="date"
+                value={filters.end_date || ""}
+                onChange={(e) => dispatch(setFilters({ end_date: e.target.value, page: 1 }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-600">{error}</p>
         </div>
       )}
 
-      {/* Transactions Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center p-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-600"></div>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Reference
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Amount
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fee
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {transactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-mono text-gray-900">{tx.reference}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getTypeBadge(
-                            tx.transaction_type
-                          )}`}
-                        >
-                          {tx.transaction_type?.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-bold text-gray-900">
-                          ${parseFloat(tx.amount).toLocaleString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">
-                          ${parseFloat(tx.fee).toLocaleString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(
-                            tx.status
-                          )}`}
-                        >
-                          {tx.status?.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {format(new Date(tx.created_at), 'MMM dd, yyyy HH:mm')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {tx.status === 'completed' && tx.status !== 'reversed' && (
-                          <button
-                            onClick={() => handleReverseTransaction(tx.id)}
-                            disabled={reversingTxId === tx.id}
-                            className="px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
-                          >
-                            {reversingTxId === tx.id ? 'Reversing...' : 'Reverse'}
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      {error && <ErrorMessage message={error} />}
 
-            {/* Pagination */}
-            {pages > 1 && (
-              <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Page {currentPage} of {pages}
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === pages}
-                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </button>
-                </div>
+      {loading ? (
+        <LoadingSpinner />
+      ) : transactions.length === 0 ? (
+        <EmptyState
+          icon="💸"
+          title="No Transactions Found"
+          message="Try adjusting your filter criteria"
+        />
+      ) : (
+        <>
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Transaction
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Parties
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {transactions.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {tx.reference}
+                      </div>
+                      <div className="text-sm text-gray-500 capitalize">
+                        {tx.transaction_type}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {tx.provider}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm">
+                        <div className="font-medium text-gray-900">
+                          From: {tx.sender?.username || tx.external_sender || "N/A"}
+                        </div>
+                        <div className="text-gray-500">
+                          To: {tx.receiver?.username || tx.external_receiver || "N/A"}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-lg font-bold text-gray-900">
+                        {formatCurrency(tx.amount, tx.source_currency)}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Fee: {formatCurrency(tx.fee, tx.source_currency)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          tx.status === "completed"
+                            ? "bg-green-100 text-green-800"
+                            : tx.status === "failed"
+                            ? "bg-red-100 text-red-800"
+                            : tx.status === "pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {tx.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {formatDate(tx.created_at)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button className="text-indigo-600 hover:text-indigo-900 mr-3">
+                        View Details
+                      </button>
+                      {tx.status === "completed" && (
+                        <button className="text-red-600 hover:text-red-900">
+                          Reverse
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {pages > 1 && (
+            <div className="mt-6 flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                Page <span className="font-medium">{currentPage}</span> of{" "}
+                <span className="font-medium">{pages}</span>
               </div>
-            )}
-          </>
-        )}
-      </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= pages}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

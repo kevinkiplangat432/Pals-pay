@@ -1,12 +1,12 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {
   fetchSystemStats,
   fetchProfitTrends,
   fetchSuspiciousActivities,
-} from '../../services/adminApi';
+} from "../../services/adminApi";
 
 export const loadSystemStats = createAsyncThunk(
-  'adminAnalytics/loadSystemStats',
+  "adminAnalytics/loadSystemStats",
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchSystemStats();
@@ -18,7 +18,7 @@ export const loadSystemStats = createAsyncThunk(
 );
 
 export const loadProfitTrends = createAsyncThunk(
-  'adminAnalytics/loadProfitTrends',
+  "adminAnalytics/loadProfitTrends",
   async (days = 30, { rejectWithValue }) => {
     try {
       const data = await fetchProfitTrends(days);
@@ -30,7 +30,7 @@ export const loadProfitTrends = createAsyncThunk(
 );
 
 export const loadSuspiciousActivities = createAsyncThunk(
-  'adminAnalytics/loadSuspiciousActivities',
+  "adminAnalytics/loadSuspiciousActivities",
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchSuspiciousActivities();
@@ -42,7 +42,7 @@ export const loadSuspiciousActivities = createAsyncThunk(
 );
 
 const adminAnalyticsSlice = createSlice({
-  name: 'adminAnalytics',
+  name: "adminAnalytics",
   initialState: {
     systemStats: null,
     profitTrends: null,
@@ -71,19 +71,19 @@ const adminAnalyticsSlice = createSlice({
       })
       .addCase(loadSystemStats.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || 'Failed to load system stats';
+        state.error = action.payload?.message || "Failed to load system stats";
       })
       .addCase(loadProfitTrends.fulfilled, (state, action) => {
         state.profitTrends = action.payload;
       })
       .addCase(loadProfitTrends.rejected, (state, action) => {
-        state.error = action.payload?.message || 'Failed to load profit trends';
+        state.error = action.payload?.message || "Failed to load profit trends";
       })
       .addCase(loadSuspiciousActivities.fulfilled, (state, action) => {
         state.suspiciousActivities = action.payload;
       })
       .addCase(loadSuspiciousActivities.rejected, (state, action) => {
-        state.error = action.payload?.message || 'Failed to load suspicious activities';
+        state.error = action.payload?.message || "Failed to load suspicious activities";
       });
   },
 });

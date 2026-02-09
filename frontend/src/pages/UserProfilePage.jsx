@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearUserMessages, fetchUserProfile, updateUserProfile} from '../featurs/profileSlice';
+import { clearUserMessages, fetchUserProfile, updateUserProfile} from '../features/profileSlice';
 
 export default function UserProfilePage() {
     const dispatch = useDispatch();

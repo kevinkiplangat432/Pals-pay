@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   clearUserMessages,
   fetchKycStatus,
-  submitKyc,
+  submitKycDocuments,
 } from "../features/profileSlice";
 
 export default function KycPage() {
@@ -35,7 +35,7 @@ export default function KycPage() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    dispatch(submitKyc(form));
+    dispatch(submitKycDocuments(form));
   }
 
   return (

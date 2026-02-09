@@ -129,6 +129,5 @@ def seed_data():
     
     print("Database seeding completed!")
 
-# THIS WAS MISSING:
 if __name__ == '__main__':
     manager.run()
