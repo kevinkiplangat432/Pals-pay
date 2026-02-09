@@ -6,7 +6,7 @@ export default function Hero() {
         {/* Left Column: Text */}
         <div className="space-y-6 md:max-w-lg">
           <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-            Fast & Secure Money Transfers for Africa
+            Fast & Secure Money Transfers for the Modern World
           </h2>
 
           <p className="text-gray-600 text-lg leading-relaxed">

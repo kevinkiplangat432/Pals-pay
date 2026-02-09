@@ -9,7 +9,7 @@
 
 1. **Navigate to frontend directory**:
 ```bash
-cd /home/sylvia-malala/phase_4/Pulse-pay/frontend
+cd /home/kevinkiplangat432/phase_4/Pals-pay/frontend
 ```
 
 2. **Install dependencies** (if not already done):
