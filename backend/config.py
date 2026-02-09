@@ -231,7 +231,7 @@ class Config:
     QUOTE_EXPIRY = timedelta(minutes=15)
     INTERNATIONAL_QUOTE_EXPIRY = timedelta(minutes=30)
     
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(',')
+    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:5173').split(',')
     
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
     

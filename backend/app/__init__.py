@@ -12,7 +12,14 @@ def create_app(config_name='default'):
     
     db.init_app(app)
     bcrypt.init_app(app)
-    cors.init_app(app, origins=app.config['CORS_ORIGINS'])
+
+    cors.init_app(
+        app, 
+        origins=app.config.get('CORS_ORIGINS', '*'),
+                  methods=app.config.get('CORS_METHODS', ['GET', 'POST', 'PUT', 'DELETE']),
+                  allow_headers=app.config.get('CORS_HEADERS', ['Content-Type', 'Authorization']))
+    
+
     migrate.init_app(app, db)
     jwt.init_app(app)
     

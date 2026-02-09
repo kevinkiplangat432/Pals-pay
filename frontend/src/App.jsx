@@ -2,6 +2,8 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Faq from "./pages/Faqs";
+
 
 // User Pages
 import WalletPage from "./pages/WalletPage";
@@ -28,6 +30,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/Faqs" element={<Faq />} />
 
       {/* User Protected Routes */}
       <Route
@@ -94,6 +97,7 @@ function App() {
         <Route path="transactions" element={<AdminTransactions />} />
         <Route path="kyc" element={<AdminKyc />} />
         <Route path="analytics" element={<AdminAnalytics />} />
+        
       </Route>
     </Routes>
   );
