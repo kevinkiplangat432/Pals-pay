@@ -1,10 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
-import { AuthContext } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const AdminHeader = ({ toggleSidebar, sidebarOpen }) => {
   const navigate = useNavigate();
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
