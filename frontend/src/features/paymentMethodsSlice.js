@@ -2,32 +2,32 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { apiFetch } from "../app/api";
 
 export const fetchPaymentMethods = createAsyncThunk("payment/methods/list", async () => {
-    return await apiFetch("/api/user/payment-methods");
+    return await apiFetch("/user/payment-methods");
 });
 
 export const addPaymentMethod = createAsyncThunk("payment/methods/add", async (methodData) => {
-    return await apiFetch("/api/user/payment-methods", {
+    return await apiFetch("/user/payment-methods", {
         method: "POST",
         body: methodData,
     });
 });
 
 export const deletePaymentMethod = createAsyncThunk("payment/methods/delete", async (methodId) => {
-    return await apiFetch(`/api/user/payment-methods/${methodId}`, {
+    return await apiFetch(`/user/payment-methods/${methodId}`, {
         method: "DELETE",
     });
 });
 
 export const setDefaultPaymentMethod = createAsyncThunk("payment/methods/set-default", async (methodId) => {
-    return await apiFetch(`/api/user/payment-methods/${methodId}/set-default`, {
+    return await apiFetch(`/user/payment-methods/${methodId}/default`, {
         method: "PUT",
     });
 });
 
-export const verifyPaymentMethod = createAsyncThunk("payment/methods/verify", async ({id, verificationData}) => {
-    return await apiFetch(`/api/user/payment-methods/${id}/verify`, {
+export const verifyPaymentMethod = createAsyncThunk("payment/methods/verify", async ({id, verification_token}) => {
+    return await apiFetch(`/user/payment-methods/${id}/verify`, {
         method: "POST",
-        body:{verificationData},
+        body:{verification_token},
     });
 });
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-import sys
 from app import create_app, db
 from app.models.user import User
 from app.models.wallet import Wallet
+from app.models.enums import KYCStatus
 from werkzeug.security import generate_password_hash
 
 app = create_app()
@@ -24,19 +24,10 @@ with app.app_context():
     print("Seeding 10 users...")
     
     for user_data in users_data:
-        try:
-            existing = User.query.filter_by(email=user_data["email"]).first()
-            if existing:
-                print(f"User {user_data['email']} already exists, skipping...")
-                continue
-            
-            existing_wallet = Wallet.query.filter_by(user_id=User.query.filter_by(username=user_data["username"]).first().id if User.query.filter_by(username=user_data["username"]).first() else None).first()
-            if existing_wallet:
-                print(f"Wallet for {user_data['username']} already exists, skipping...")
-                continue
-                
-        except:
-            pass
+        existing = User.query.filter_by(email=user_data["email"]).first()
+        if existing:
+            print(f"User {user_data['email']} already exists, skipping...")
+            continue
         
         try:
             user = User(
@@ -48,12 +39,12 @@ with app.app_context():
                 phone_number=user_data["phone"],
                 is_active=True,
                 is_verified=True,
-                kyc_status="verified",
+                kyc_status=KYCStatus.verified,
                 kyc_level=1
             )
             
             db.session.add(user)
-            db.session.commit()
+            db.session.flush()
             
             wallet = Wallet(
                 user_id=user.id,
@@ -65,9 +56,9 @@ with app.app_context():
             
             db.session.add(wallet)
             db.session.commit()
-            print(f"Created user: {user.email} with wallet")
+            print(f"✓ Created user: {user.email} with wallet (10,000 KES)")
         except Exception as e:
             db.session.rollback()
-            print(f"Error creating {user_data['email']}: {str(e)}")
+            print(f"✗ Error creating {user_data['email']}: {str(e)}")
     
-    print("✓ Seeding complete!")
+    print("\n✓ Seeding complete!")

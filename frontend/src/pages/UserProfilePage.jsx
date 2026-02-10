@@ -4,7 +4,7 @@ import { clearUserMessages, fetchUserProfile, updateUserProfile} from '../featur
 
 export default function UserProfilePage() {
     const dispatch = useDispatch();
-    const { profile, status, error, success } = useSelector((state) => state.profile);
+    const { profile, status, error, success } = useSelector((state) => state.user);
 
     const [formData, setFormData] = useState({
         first_name: "",

@@ -3,25 +3,25 @@ import { apiFetch } from "../app/api";
 
 // Profile
 export const fetchUserProfile = createAsyncThunk("user/profile/get", async () => {
-    return await apiFetch("/api/user/profile");
+    return await apiFetch("/user/profile");
 });
 
 export const updateUserProfile = createAsyncThunk("user/profile/update", async (profileData) => {
-    return await apiFetch("/api/user/profile", {
+    return await apiFetch("/user/profile", {
         method: "PUT",
         body: profileData,
     });
 });
 
 export const changePassword = createAsyncThunk("user/password/change", async (passwordData) => {
-    return await apiFetch("/api/user/password", {
+    return await apiFetch("/user/change-password", {
         method: "PUT",
         body: passwordData,
     });
 });
 
 export const fetchKycStatus = createAsyncThunk("user/kyc/status", async () => {
-    return await apiFetch("/api/user/kyc-status");
+    return await apiFetch("/user/kyc/status");
 });
 
 export const submitKycDocuments = createAsyncThunk("user/kyc/submit", async (kycData) => {
@@ -32,7 +32,7 @@ export const submitKycDocuments = createAsyncThunk("user/kyc/submit", async (kyc
     if (kycData.back_document) fd.append("back_document", kycData.back_document);
     if (kycData.selfie) fd.append("selfie", kycData.selfie);
 
-    return await apiFetch("/api/user/kyc/submit", {method: "POST", body: fd});
+    return await apiFetch("/user/kyc/submit", {method: "POST", body: fd});
 });
 
 const userSlice = createSlice({

@@ -6,15 +6,18 @@ import { Link } from 'react-router-dom';
 
 const UserDashboard = () => {
   const dispatch = useDispatch();
-  const { summary } = useSelector((s) => s.wallet || {});
-  const { data } = useSelector((s) => s.transactions);
+  const wallet = useSelector((s) => s.wallet);
+  const transactions = useSelector((s) => s.transactions);
+  
+  const summary = wallet?.summary;
+  const data = transactions?.data;
 
   useEffect(() => {
     dispatch(fetchWalletSummary());
     dispatch(fetchTransactions({ page: 1, per_page: 5 }));
   }, [dispatch]);
 
-  const transactions = data?.transactions || data?.items || data?.data || [];
+  const txList = data?.transactions || data?.items || data?.data || [];
   const balance = summary?.balance ?? summary?.current_balance ?? summary?.available_balance ?? 0;
   const currency = summary?.currency || 'KES';
 
@@ -39,7 +42,7 @@ const UserDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 mb-1">Total Transactions</p>
-              <p className="text-3xl font-bold text-gray-900">{transactions.length}</p>
+              <p className="text-3xl font-bold text-gray-900">{txList.length}</p>
             </div>
             <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-2xl">
               💸
@@ -70,11 +73,11 @@ const UserDashboard = () => {
           </Link>
         </div>
 
-        {transactions.length === 0 ? (
+        {txList.length === 0 ? (
           <p className="text-gray-500 text-center py-8">No transactions yet</p>
         ) : (
           <div className="space-y-3">
-            {transactions.slice(0, 5).map((tx) => (
+            {txList.slice(0, 5).map((tx) => (
               <div key={tx.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div>
                   <p className="text-sm font-medium text-gray-900">{tx.transaction_type || tx.type}</p>

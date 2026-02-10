@@ -19,11 +19,12 @@ def create_app(config_name='default'):
     cors.init_app(
         app,
         resources={
-            r"/api/*": {
-                "origins": app.config.get('CORS_ORIGINS', ['http://localhost:5173']),
-                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            r"/*": {
+                "origins": ["http://localhost:5173", "http://localhost:3000"],
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
                 "allow_headers": ["Content-Type", "Authorization"],
-                "supports_credentials": True
+                "supports_credentials": True,
+                "expose_headers": ["Content-Type", "Authorization"]
             }
         }
     )
