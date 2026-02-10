@@ -95,7 +95,7 @@ const AdminKyc = () => {
                         href={kyc.document_front_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-indigo-600 hover:text-indigo-900"
+                        className="text-sm text-green-600 hover:text-green-900"
                       >
                         Front
                       </a>
@@ -105,7 +105,7 @@ const AdminKyc = () => {
                         href={kyc.document_back_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-indigo-600 hover:text-indigo-900"
+                        className="text-sm text-green-600 hover:text-green-900"
                       >
                         Back
                       </a>
@@ -115,7 +115,7 @@ const AdminKyc = () => {
                         href={kyc.selfie_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-indigo-600 hover:text-indigo-900"
+                        className="text-sm text-green-600 hover:text-green-900"
                       >
                         Selfie
                       </a>

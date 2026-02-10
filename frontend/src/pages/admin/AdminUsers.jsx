@@ -46,11 +46,11 @@ const AdminUsers = () => {
             placeholder="Search by name, email, or phone..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
           <button
             type="submit"
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             Search
           </button>
@@ -60,7 +60,7 @@ const AdminUsers = () => {
           <select
             value={filters.status || ""}
             onChange={(e) => dispatch(setFilters({ status: e.target.value || "", page: 1 }))}
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500"
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
           >
             <option value="">All Status</option>
             <option value="active">Active</option>
@@ -70,7 +70,7 @@ const AdminUsers = () => {
           <select
             value={filters.kyc_status || ""}
             onChange={(e) => dispatch(setFilters({ kyc_status: e.target.value || "", page: 1 }))}
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500"
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
           >
             <option value="">All KYC Status</option>
             <option value="verified">Verified</option>
@@ -118,8 +118,8 @@ const AdminUsers = () => {
                   <tr key={user.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                          <span className="text-indigo-600 font-bold">
+                        <div className="flex-shrink-0 h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
+                          <span className="text-green-600 font-bold">
                             {user.first_name?.[0] || user.username?.[0] || "U"}
                           </span>
                         </div>
@@ -170,7 +170,7 @@ const AdminUsers = () => {
                       >
                         {user.is_active ? "Deactivate" : "Activate"}
                       </button>
-                      <button className="text-indigo-600 hover:text-indigo-900">
+                      <button className="text-green-600 hover:text-green-900">
                         View Details
                       </button>
                     </td>

@@ -16,7 +16,7 @@ const AdminHeader = ({ toggleSidebar, sidebarOpen }) => {
         <div className="flex items-center space-x-4">
           <button
             onClick={toggleSidebar}
-            className="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg p-2"
+            className="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-lg p-2"
           >
             <svg
               className="w-6 h-6"
@@ -42,7 +42,7 @@ const AdminHeader = ({ toggleSidebar, sidebarOpen }) => {
 
         <div className="flex items-center space-x-4">
           <div className="relative">
-            <button className="p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg">
+            <button className="p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-lg">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -70,7 +70,7 @@ const AdminHeader = ({ toggleSidebar, sidebarOpen }) => {
             
             <div className="relative group">
               <button className="flex items-center space-x-2 focus:outline-none">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-white font-bold">
                   {user?.username?.[0]?.toUpperCase() || 'A'}
                 </div>
               </button>

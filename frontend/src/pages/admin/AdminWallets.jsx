@@ -55,11 +55,11 @@ const AdminWallets = () => {
             placeholder="Search by user email, phone, or name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
           <button
             type="submit"
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             Search
           </button>
@@ -69,7 +69,7 @@ const AdminWallets = () => {
           <select
             value={filters.status || ""}
             onChange={(e) => dispatch(setFilters({ status: e.target.value || "", page: 1 }))}
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500"
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
           >
             <option value="">All Status</option>
             <option value="active">Active</option>
@@ -82,7 +82,7 @@ const AdminWallets = () => {
             placeholder="Min Balance"
             value={filters.min_balance || ""}
             onChange={(e) => dispatch(setFilters({ min_balance: e.target.value, page: 1 }))}
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 w-40"
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 w-40"
           />
         </div>
       </div>
@@ -173,7 +173,7 @@ const AdminWallets = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-indigo-600 hover:text-indigo-900 mr-3">
+                      <button className="text-green-600 hover:text-green-900 mr-3">
                         View Details
                       </button>
                       <button className="text-red-600 hover:text-red-900">

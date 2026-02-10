@@ -50,7 +50,7 @@ const AdminAnalytics = () => {
             onClick={() => setActiveTab("overview")}
             className={`px-4 py-2 rounded-lg ${
               activeTab === "overview"
-                ? "bg-indigo-600 text-white"
+                ? "bg-green-600 text-white"
                 : "bg-gray-100 text-gray-700"
             }`}
           >
@@ -60,7 +60,7 @@ const AdminAnalytics = () => {
             onClick={() => setActiveTab("profit")}
             className={`px-4 py-2 rounded-lg ${
               activeTab === "profit"
-                ? "bg-indigo-600 text-white"
+                ? "bg-green-600 text-white"
                 : "bg-gray-100 text-gray-700"
             }`}
           >
@@ -70,7 +70,7 @@ const AdminAnalytics = () => {
             onClick={() => setActiveTab("suspicious")}
             className={`px-4 py-2 rounded-lg ${
               activeTab === "suspicious"
-                ? "bg-indigo-600 text-white"
+                ? "bg-green-600 text-white"
                 : "bg-gray-100 text-gray-700"
             }`}
           >

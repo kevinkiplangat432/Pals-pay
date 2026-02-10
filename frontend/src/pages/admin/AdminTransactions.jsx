@@ -63,7 +63,7 @@ const AdminTransactions = () => {
               <select
                 value={filters.status || ""}
                 onChange={(e) => dispatch(setFilters({ status: e.target.value || "", page: 1 }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
               >
                 <option value="">All Status</option>
                 <option value="pending">Pending</option>
@@ -78,7 +78,7 @@ const AdminTransactions = () => {
               <select
                 value={filters.type || ""}
                 onChange={(e) => dispatch(setFilters({ type: e.target.value || "", page: 1 }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
               >
                 <option value="">All Types</option>
                 <option value="transfer">Transfer</option>
@@ -95,7 +95,7 @@ const AdminTransactions = () => {
                 placeholder="0"
                 value={filters.min_amount || ""}
                 onChange={(e) => dispatch(setFilters({ min_amount: e.target.value, page: 1 }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
               />
             </div>
 
@@ -106,7 +106,7 @@ const AdminTransactions = () => {
                 placeholder="Any"
                 value={filters.max_amount || ""}
                 onChange={(e) => dispatch(setFilters({ max_amount: e.target.value, page: 1 }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
               />
             </div>
 
@@ -116,7 +116,7 @@ const AdminTransactions = () => {
                 type="date"
                 value={filters.start_date || ""}
                 onChange={(e) => dispatch(setFilters({ start_date: e.target.value, page: 1 }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
               />
             </div>
 
@@ -126,7 +126,7 @@ const AdminTransactions = () => {
                 type="date"
                 value={filters.end_date || ""}
                 onChange={(e) => dispatch(setFilters({ end_date: e.target.value, page: 1 }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
               />
             </div>
           </div>
@@ -222,7 +222,7 @@ const AdminTransactions = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-indigo-600 hover:text-indigo-900 mr-3">
+                      <button className="text-green-600 hover:text-green-900 mr-3">
                         View Details
                       </button>
                       {tx.status === "completed" && (
