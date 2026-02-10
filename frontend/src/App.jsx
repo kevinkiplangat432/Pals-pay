@@ -42,7 +42,8 @@ function App() {
             <WalletPage />
           </ProtectedRoute>
         }
-      />
+      />git merge --abort
+
       <Route
         path="/profile"
         element={
@@ -52,7 +53,7 @@ function App() {
         }
       />
       <Route
-        path="/kyc"
+        path="/kyc"abort
         element={
           <ProtectedRoute>
             <KycPage />
