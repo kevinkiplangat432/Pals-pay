@@ -1,3 +1,4 @@
+# manage.py - Complete version
 import os
 from flask_script import Manager, Shell
 from flask_migrate import MigrateCommand

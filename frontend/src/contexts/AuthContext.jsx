@@ -1,49 +1,55 @@
-import { useState } from 'react';
-import { AuthContext } from './authContext';
+import React, { createContext, useState, useEffect, useContext } from "react";
+
+const AuthContext = createContext();
+
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    // Initialize from localStorage
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
-    
-    if (storedUser && storedToken) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    const userData = localStorage.getItem("user");
+
+    if (token && userData) {
       try {
-        return JSON.parse(storedUser);
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        return null;
+        setUser(JSON.parse(userData));
+      } catch {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("user");
       }
     }
-    return null;
-  });
-  
-  const isAuthenticated = !!user && !!localStorage.getItem('token');
+    setLoading(false);
+  }, []);
 
-  const login = (userData, token) => {
+  const login = (userData, tokens) => {
+    localStorage.setItem("access_token", tokens.access_token);
+    localStorage.setItem("refresh_token", tokens.refresh_token);
+    localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('token', token);
   };
 
   const logout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
     setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    window.location.href = "/login";
   };
 
   const updateUser = (userData) => {
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated,
+        isAuthenticated: !!user,
+        loading,
         login,
         logout,
         updateUser,

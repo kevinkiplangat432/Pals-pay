@@ -1,4 +1,4 @@
-import enum
+import enum  
 
 
 class TransactionStatus(enum.Enum):

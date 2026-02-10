@@ -8,7 +8,7 @@ class AuditLog(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     
-    # Actor information
+    # Actor information for tracking who performed the action
     actor_id = db.Column(
         db.Integer, 
         db.ForeignKey('users.id', ondelete='SET NULL'), 
@@ -17,11 +17,11 @@ class AuditLog(db.Model):
     )
     actor_type = db.Column(db.String(20), nullable=True)  # 'user', 'admin', 'system', 'api'
     actor_ip = db.Column(db.String(45), nullable=True)  # Supports IPv6
-    user_agent = db.Column(db.Text, nullable=True)
+    user_agent = db.Column(db.Text, nullable=True)  #type of device or browser used
     
     # Action details
-    action = db.Column(db.String(100), nullable=False, index=True)
-    resource_type = db.Column(db.String(50), nullable=False, index=True)  # 'user', 'transaction', 'wallet', 
+    action = db.Column(db.String(100), nullable=False, index=True) #what the actor/user did
+    resource_type = db.Column(db.String(50), nullable=False, index=True)  # 'user', 'transaction', 'wallet', what resource was affected
     resource_id = db.Column(db.Integer, nullable=True, index=True)
     
     # Changes

@@ -1,15 +1,20 @@
-import { Navigate } from 'react-router-dom';
-import { useContext } from 'react';
-import { AuthContext } from '../../contexts/authContext';
+import { Navigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../../contexts/AuthContext";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 const AdminProtectedRoute = ({ children }) => {
-  const { user, isAuthenticated } = useContext(AuthContext);
+  const { user, isAuthenticated, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user?.role !== 'admin') {
+  if (!user?.is_admin) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-100">
         <div className="bg-white rounded-lg shadow-md p-8 max-w-md">
@@ -20,7 +25,7 @@ const AdminProtectedRoute = ({ children }) => {
               You don't have permission to access the admin dashboard.
             </p>
             <button
-              onClick={() => window.location.href = '/'}
+              onClick={() => (window.location.href = "/")}
               className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
               Go to Home
