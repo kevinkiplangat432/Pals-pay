@@ -19,7 +19,7 @@ export default function Login() {
 
   useEffect(() => {
     if (user && !user.requires_verification) {
-      navigate(user.is_admin ? "/admin/dashboard" : "/wallet");
+      navigate(user.is_admin ? "/admin/dashboard" : "/dashboard");
     }
   }, [user, navigate]);
 
@@ -50,7 +50,8 @@ export default function Login() {
       );
 
       if (verifyLoginOTP.fulfilled.match(result)) {
-        navigate("/wallet");
+        const userData = result.payload?.user;
+        navigate(userData?.is_admin ? "/admin/dashboard" : "/dashboard");
       }
     } else {
       await dispatch(login({

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Hero() {
   return (
     <section className="w-full py-20 bg-white">
@@ -15,18 +17,18 @@ export default function Hero() {
           </p>
 
           <div className="flex flex-wrap gap-4">
-            <a
-              href="#"
+            <Link
+              to="/signup"
               className="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700"
             >
               Get Started
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/faqs"
               className="border border-green-600 text-green-600 px-6 py-3 rounded-md"
             >
               Learn More
-            </a>
+            </Link>
           </div>
         </div>
 
