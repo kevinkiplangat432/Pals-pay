@@ -2,15 +2,15 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { apiFetch } from '../app/api';
 
 export const fetchWalletSummary = createAsyncThunk("wallet/summary", async () => {
-    return await apiFetch("api/wallet/summary");
+    return await apiFetch("/wallet/summary");
 });
 
 export const fetchWalletAnalytics = createAsyncThunk("wallet/analytics", async () => {
-    return await apiFetch("api/wallet/analytics");
+    return await apiFetch("/wallet/analytics");
 });
 
 export const depositMpesa = createAsyncThunk("wallet/depositMpesa", async (data) => {
-    return await apiFetch("api/wallet/deposit/mpesa", {
+    return await apiFetch("/wallet/deposit/mpesa", {
         method: "POST",
         body: {amount, phone_number},
     });
@@ -18,7 +18,7 @@ export const depositMpesa = createAsyncThunk("wallet/depositMpesa", async (data)
 
 export const transferToBeneficiaryWallet = createAsyncThunk("wallet/transferToBeneficiaryWallet", async (data) => {
     async ({ beneficiary_wallet_id, amount, description }) => {
-        return await apiFetch("api/wallet/transfer/beneficiary", {
+        return await apiFetch("/wallet/transfer/beneficiary", {
             method: "POST",
             body: { beneficiary_wallet_id, amount, description },
         });
@@ -27,7 +27,7 @@ export const transferToBeneficiaryWallet = createAsyncThunk("wallet/transferToBe
 
 export const transferToPhone = createAsyncThunk("wallet/transferToPhone", async (data) => {
     async ({ phone_number, amount, description }) => {
-        return await apiFetch("api/wallet/transfer/phone", {
+        return await apiFetch("/wallet/transfer/phone", {
             method: "POST",
             body: { phone_number, amount, description },
         });
@@ -36,7 +36,7 @@ export const transferToPhone = createAsyncThunk("wallet/transferToPhone", async 
 
 export const withdrawFunds = createAsyncThunk("wallet/withdrawFunds", async (data) => {
     async ({ amount, payment_method_id}) => {
-        return await apiFetch("api/wallet/withdraw", {
+        return await apiFetch("/wallet/withdraw", {
             method: "POST",
             body: { amount, payment_method_id },
         });
@@ -48,7 +48,7 @@ export const fetchTransactionSummary = createAsyncThunk(
     async ({ days = 30} = {}) => {
         const qs = new URLSearchParams();
         qs.set("days", String(days));
-        return await apiFetch(`api/wallet/transactions/summary?${qs.toString()}`);
+        return await apiFetch(`/wallet/transactions/summary?${qs.toString()}`);
     }
 );
 

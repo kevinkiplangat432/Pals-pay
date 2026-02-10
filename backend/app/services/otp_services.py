@@ -16,6 +16,8 @@ class OTPService:
         from ..utils.otp import generate_otp
         otp_code = generate_otp()
         
+        current_app.logger.info(f"Generated OTP for user {user_id}: {otp_code} (operation: {operation_type})")
+        
         user.otp_code = otp_code
         user.otp_expires_at = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
         user.otp_attempts = 0
@@ -29,16 +31,22 @@ class OTPService:
     def verify_otp(user_id, operation_type, otp_code):
         user = User.query.get(user_id)
         if not user:
+            current_app.logger.error(f"OTP verification failed: User {user_id} not found")
             return False
         
         if user.otp_locked_until and datetime.now(timezone.utc) < user.otp_locked_until:
+            current_app.logger.error(f"OTP verification failed: User {user_id} is locked until {user.otp_locked_until}")
             return False
         
         if not user.otp_code or not user.otp_expires_at:
+            current_app.logger.error(f"OTP verification failed: No OTP set for user {user_id}")
             return False
         
         if datetime.now(timezone.utc) > user.otp_expires_at:
+            current_app.logger.error(f"OTP verification failed: OTP expired for user {user_id}")
             return False
+        
+        current_app.logger.info(f"Verifying OTP for user {user_id}: provided={otp_code}, stored={user.otp_code}")
         
         if user.otp_code != otp_code:
             user.otp_attempts += 1
@@ -47,6 +55,7 @@ class OTPService:
                 user.otp_locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
             
             db.session.commit()
+            current_app.logger.error(f"OTP verification failed: Invalid OTP for user {user_id}")
             return False
         
         user.otp_code = None
@@ -55,6 +64,7 @@ class OTPService:
         user.otp_operation = None
         
         db.session.commit()
+        current_app.logger.info(f"OTP verified successfully for user {user_id}")
         return True
     
     @staticmethod

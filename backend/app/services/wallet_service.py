@@ -20,7 +20,7 @@ class WalletService:
             'balance': float(wallet.balance),
             'available_balance': float(wallet.available_balance),
             'locked_balance': float(wallet.locked_balance),
-            'currency': wallet.currency,
+            'currency': wallet.primary_currency,
             'daily_limit': float(wallet.daily_limit),
             'monthly_limit': float(wallet.monthly_limit),
             'last_transaction_at': wallet.last_transaction_at

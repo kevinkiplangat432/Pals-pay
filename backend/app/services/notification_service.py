@@ -166,6 +166,8 @@ class NotificationService:
             return True
         except Exception as e:
             current_app.logger.error(f"Failed to send email: {str(e)}")
+            current_app.logger.info(f"EMAIL FALLBACK - To: {to_email}, Subject: {subject}")
+            current_app.logger.info(f"EMAIL BODY: {body}")
             return False
     
     @staticmethod
