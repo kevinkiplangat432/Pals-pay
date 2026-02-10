@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-from .extensions import db, bcrypt, cors, migrate, jwt
+from .extensions import db, bcrypt, migrate, jwt
 from .models import *
 from config import config
 import os
@@ -13,12 +13,13 @@ def create_app(config_name='default'):
     db.init_app(app)
     bcrypt.init_app(app)
 
-    cors.init_app(
-        app, 
-        origins=app.config.get('CORS_ORIGINS', '*'),
-                  methods=app.config.get('CORS_METHODS', ['GET', 'POST', 'PUT', 'DELETE']),
-                  allow_headers=app.config.get('CORS_HEADERS', ['Content-Type', 'Authorization']))
-    
+    CORS(
+        app,
+        resources={r"/*": {"origins": ["http://localhost:5173"]}},
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    )
 
     migrate.init_app(app, db)
     jwt.init_app(app)

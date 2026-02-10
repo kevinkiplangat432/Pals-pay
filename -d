@@ -1,0 +1,17 @@
+HTTP/1.1 415 UNSUPPORTED MEDIA TYPE
+Server: Werkzeug/2.3.7 Python/3.8.13
+Date: Mon, 09 Feb 2026 11:20:56 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 215
+Access-Control-Allow-Origin: http://localhost:3000
+Vary: Origin
+Connection: close
+
+<!doctype html>
+<html lang=en>
+<title>415 Unsupported Media Type</title>
+<h1>Unsupported Media Type</h1>
+<p>Did not attempt to load JSON data because the request Content-Type was not &#39;application/json&#39;.</p>
+--_curl_--"email":"test@test.com"
+--_curl_--"password":"Pass1234"
+--_curl_--"full_name":"Test User"

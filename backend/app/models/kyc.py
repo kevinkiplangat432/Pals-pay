@@ -15,6 +15,7 @@ class KYCVerification(db.Model):
         index=True
     )
     
+    
     # Document information
     document_type = db.Column(
         db.Enum(DocumentType, name="document_type_enum"),

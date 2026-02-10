@@ -20,9 +20,11 @@ PHONE_REGEX = r'^\+?[1-9]\d{1,14}$'  # E.164 format: optional +, followed by cou
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
+    data = request.get_json(silent=True)
     
     name = data.get('name')
+    first_name = data.get("first_name")
+    last_name = data.get("last_name")
     email = data.get('email')
     password = data.get('password')
     phone_number = data.get('phone_number')
@@ -35,9 +37,13 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({'message': 'Email already registered'}), 400
     
-    name_parts = name.split(' ', 1)
-    first_name = name_parts[0]
-    last_name = name_parts[1] if len(name_parts) > 1 else ''
+    if name and not first_name:
+        name_parts = name.strip().split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+
+    if not first_name:
+        return jsonify({"message": "first_name (or name) is required"})
     
     region = RegionService.get_region_by_country(country_code)
     
