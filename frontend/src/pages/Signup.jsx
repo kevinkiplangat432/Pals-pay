@@ -49,27 +49,31 @@ export default function Signup() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    // Split name into first and last name
-    const nameParts = formData.name.trim().split(" ");
-    const userData = {
-      ...formData,
-      first_name: nameParts[0],
-      last_name: nameParts.slice(1).join(" ") || "",
-    };
-    delete userData.name;
+  // Frontend validation
+  if (!formData.name.trim()) {
+    alert("Please enter your name");
+    return;
+  }
 
-    const result = await dispatch(register(userData));
+  if (!formData.email.trim()) {
+    alert("Please enter your email");
+    return;
+  }
 
-    if (register.fulfilled.match(result)) {
-      if (result.payload.requires_verification) {
-        navigate("/verify-email");
-      } else {
-        navigate("/wallet");
-      }
+  // Dispatch register thunk
+  const result = await dispatch(register(formData));
+
+  if (register.fulfilled.match(result)) {
+    if (result.payload.requires_verification) {
+      navigate("/verify-email");
+    } else {
+      navigate("/wallet");
     }
-  };
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">

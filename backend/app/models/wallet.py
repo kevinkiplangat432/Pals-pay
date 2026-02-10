@@ -1,4 +1,3 @@
-# models/wallet.py - Updated for multi-currency with regulatory compliance
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from sqlalchemy.dialects.postgresql import JSONB
@@ -13,6 +12,7 @@ class Wallet(db.Model):
     
     # Foreign keys
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), unique=True, nullable=False, index=True)
+
     
     # Primary wallet balance (in user's preferred currency)
     balance = db.Column(db.Numeric(12, 2), default=Decimal('0.00'), nullable=False)

@@ -1,4 +1,3 @@
-# models/fee.py - First-class fee modeling
 from datetime import datetime, timezone
 from decimal import Decimal
 from sqlalchemy.dialects.postgresql import JSONB

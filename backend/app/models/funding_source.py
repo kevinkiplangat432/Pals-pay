@@ -1,4 +1,3 @@
-# models/funding_source.py - Traceability for money sources
 from datetime import datetime, timezone
 from decimal import Decimal
 from sqlalchemy.dialects.postgresql import JSONB
@@ -54,7 +53,7 @@ class FundingSource(db.Model):
     deactivated_at = db.Column(db.DateTime(timezone=True), nullable=True)
     
     # Relationships
-    user = db.relationship('User', backref='funding_sources')
+    user = db.relationship('User')
     
     # Indexes
     __table_args__ = (

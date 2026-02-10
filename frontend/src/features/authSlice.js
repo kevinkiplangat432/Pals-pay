@@ -1,27 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { apiFetch } from "../app/api";
 
-export const login = createAsyncThunk(
-  "auth/login",
-  async (credentials, { rejectWithValue }) => {
-    try {
-      const data = await apiFetch("/auth/login", {
-        method: "POST",
-        body: credentials,
-      });
-
-      // Store tokens
-      if (data.access_token) {
-        localStorage.setItem("access_token", data.access_token);
-        localStorage.setItem("refresh_token", data.refresh_token);
-      }
-
-      return data;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
 
 export const register = createAsyncThunk(
   "auth/register",
@@ -32,15 +11,35 @@ export const register = createAsyncThunk(
         body: userData,
       });
 
-      // Store tokens
       if (data.access_token) {
         localStorage.setItem("access_token", data.access_token);
         localStorage.setItem("refresh_token", data.refresh_token);
       }
 
       return data;
-    } catch (error) {
-      return rejectWithValue(error.message);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const login = createAsyncThunk(
+  "auth/login",
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const data = await apiFetch("/auth/login", {
+        method: "POST",
+        body: credentials,
+      });
+
+      if (data.access_token) {
+        localStorage.setItem("access_token", data.access_token);
+        localStorage.setItem("refresh_token", data.refresh_token);
+      }
+
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.message);
     }
   }
 );
@@ -60,27 +59,22 @@ export const verifyLoginOTP = createAsyncThunk(
       }
 
       return data;
-    } catch (error) {
-      return rejectWithValue(error.message);
+    } catch (err) {
+      return rejectWithValue(err.message);
     }
   }
 );
 
-export const logout = createAsyncThunk(
-  "auth/logout",
-  async (_, { rejectWithValue }) => {
-    try {
-      await apiFetch("/auth/logout", { method: "POST" });
-    } catch (error) {
-      // Still logout even if API call fails
-    } finally {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      localStorage.removeItem("user");
-      return true;
-    }
+export const logout = createAsyncThunk("auth/logout", async () => {
+  try {
+    await apiFetch("/auth/logout", { method: "POST" });
+  } finally {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+    return true;
   }
-);
+});
 
 export const fetchUserProfile = createAsyncThunk(
   "auth/fetchUserProfile",
@@ -89,11 +83,12 @@ export const fetchUserProfile = createAsyncThunk(
       const data = await apiFetch("/user/profile");
       localStorage.setItem("user", JSON.stringify(data));
       return data;
-    } catch (error) {
-      return rejectWithValue(error.message);
+    } catch (err) {
+      return rejectWithValue(err.message);
     }
   }
 );
+
 
 const authSlice = createSlice({
   name: "auth",
@@ -137,6 +132,10 @@ const authSlice = createSlice({
       })
 
       // Register
+      .addCase(register.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
       .addCase(register.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload.user;
