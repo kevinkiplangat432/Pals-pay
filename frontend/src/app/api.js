@@ -31,6 +31,7 @@ export async function apiFetch(endpoint, options = {}) {
   }
 
   if (!res.ok) {
+    console.error('API Error:', { status: res.status, endpoint, data });
     throw new Error(data.message || "API request failed");
   }
 

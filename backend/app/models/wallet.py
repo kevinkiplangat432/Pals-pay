@@ -12,7 +12,6 @@ class Wallet(db.Model):
     
     # Foreign keys
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), unique=True, nullable=False, index=True)
-    account_id = db.Column(db.Integer, db.ForeignKey('accounts.id', ondelete='CASCADE'), nullable=True, index=True)
 
     
     # Primary wallet balance (in user's preferred currency)

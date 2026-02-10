@@ -54,25 +54,16 @@ export default function Signup() {
   // Frontend validation
   if (!formData.name.trim()) {
     alert("Please enter your name");
-    return; // stop submission
+    return;
   }
 
   if (!formData.email.trim()) {
     alert("Please enter your email");
-    return; // stop submission
+    return;
   }
 
-  // Split name into first and last name
-  const nameParts = formData.name.trim().split(" ");
-  const userData = {
-    ...formData,
-    first_name: nameParts[0],
-    last_name: nameParts.slice(1).join(" ") || "",
-  };
-  delete userData.name;
-
   // Dispatch register thunk
-  const result = await dispatch(register(userData));
+  const result = await dispatch(register(formData));
 
   if (register.fulfilled.match(result)) {
     if (result.payload.requires_verification) {
