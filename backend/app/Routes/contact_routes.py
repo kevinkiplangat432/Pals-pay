@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from app.services.notification_service import NotificationService
 from config import Config
 import logging
@@ -17,7 +17,7 @@ def submit_contact():
         if not all([name, email, message]):
             return jsonify({'error': 'All fields are required'}), 400
         
-        admin_email = Config.EMAIL_CONFIG.get('sender')
+        admin_email = current_app.config.get('EMAIL_CONFIG', {}).get('sender')
         
         email_body = f"""
 New Contact Form Submission
@@ -29,11 +29,12 @@ Message:
 {message}
 """
         
-        NotificationService._send_email(
-            to_email=admin_email,
-            subject=f"Contact Form: Message from {name}",
-            body=email_body
-        )
+        with current_app.app_context():
+            NotificationService._send_email(
+                to_email=admin_email,
+                subject=f"Contact Form: Message from {name}",
+                body=email_body
+            )
         
         logger.info(f"Contact form submitted by {email}")
         return jsonify({'message': 'Message sent successfully'}), 200
