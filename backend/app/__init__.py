@@ -5,6 +5,9 @@ from .models import *
 from config import config
 import os
 
+
+
+
 def create_app(config_name='default'):
     app = Flask(__name__)
     
@@ -12,12 +15,22 @@ def create_app(config_name='default'):
     
     db.init_app(app)
     bcrypt.init_app(app)
-
+    
     cors.init_app(
-        app, 
-        origins=app.config.get('CORS_ORIGINS', '*'),
-                  methods=app.config.get('CORS_METHODS', ['GET', 'POST', 'PUT', 'DELETE']),
-                  allow_headers=app.config.get('CORS_HEADERS', ['Content-Type', 'Authorization']))
+    app,
+    resources={
+        r"/api/*": {
+            "origins": "http://localhost:5173"
+        }
+    },
+    supports_credentials=True
+    )
+
+    # cors.init_app(
+    #     app, 
+    #     origins=app.config.get('CORS_ORIGINS', '*'),
+    #               methods=app.config.get('CORS_METHODS', ['GET', 'POST', 'PUT', 'DELETE']),
+    #               allow_headers=app.config.get('CORS_HEADERS', ['Content-Type', 'Authorization']))
     
 
     migrate.init_app(app, db)

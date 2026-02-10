@@ -1,4 +1,3 @@
-# models/user.py - Updated with account relationship
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -69,13 +68,48 @@ class User(db.Model):
     last_kyc_review = db.Column(db.DateTime(timezone=True), nullable=True)
     
     # Relationships
-    wallet = db.relationship('Wallet', backref='user', uselist=False, cascade='all, delete-orphan')
-    kyc_verification = db.relationship('KYCVerification', backref='user', uselist=False, cascade='all, delete-orphan')
-    payment_methods = db.relationship('PaymentMethod', backref='user', lazy='dynamic', cascade='all, delete-orphan')
-    account_links = db.relationship('UserAccount', backref='user', lazy='dynamic', cascade='all, delete-orphan')
-    funding_sources = db.relationship('FundingSource', backref='user', lazy='dynamic', cascade='all, delete-orphan')
-    payout_destinations = db.relationship('PayoutDestination', backref='user', lazy='dynamic', cascade='all, delete-orphan')
-    
+    wallet = db.relationship(
+    'Wallet',
+    backref='user',
+    uselist=False,
+    cascade='all, delete-orphan'
+    )
+
+    kyc_verification = db.relationship(
+    'KYCVerification',
+    foreign_keys='KYCVerification.user_id', 
+    backref=db.backref('user', foreign_keys='KYCVerification.user_id'),
+    uselist=False,
+    cascade='all, delete-orphan'
+    )
+    payment_methods = db.relationship(
+    'PaymentMethod',
+    backref='owner',  # renamed from 'user' to 'owner' to avoid collision
+    lazy='dynamic',
+    cascade='all, delete-orphan'
+    )
+    account_links = db.relationship(
+    'UserAccount',
+    foreign_keys='UserAccount.user_id',
+    lazy='dynamic',
+    cascade='all, delete-orphan'
+    )
+    funding_sources = db.relationship(
+    'FundingSource',
+    foreign_keys='FundingSource.user_id',
+    backref='owner',
+    lazy='dynamic',
+    cascade='all, delete-orphan'
+    )
+
+    payout_destinations = db.relationship(
+    'PayoutDestination',
+    foreign_keys='PayoutDestination.user_id',
+    backref='owner',
+    lazy='dynamic',
+    cascade='all, delete-orphan'
+    )
+  
     # Indexes
     __table_args__ = (
         db.Index('idx_users_country_region', 'country_code', 'region'),

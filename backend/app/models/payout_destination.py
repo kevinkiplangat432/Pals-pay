@@ -55,7 +55,7 @@ class PayoutDestination(db.Model):
     deactivated_at = db.Column(db.DateTime(timezone=True), nullable=True)
     
     # Relationships
-    user = db.relationship('User', backref='payout_destinations')
+    user = db.relationship('User')
     
     # Indexes
     __table_args__ = (

@@ -22,7 +22,7 @@ PHONE_REGEX = r'^\+?[1-9]\d{1,14}$'  # E.164 format: optional +, followed by cou
 def register():
     data = request.get_json()
     
-    name = data.get('name')
+    name = data.get('name', '')
     email = data.get('email')
     password = data.get('password')
     phone_number = data.get('phone_number')
@@ -35,6 +35,9 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({'message': 'Email already registered'}), 400
     
+    if not name:
+        return jsonify({'message': 'Name is required'}), 400
+
     name_parts = name.split(' ', 1)
     first_name = name_parts[0]
     last_name = name_parts[1] if len(name_parts) > 1 else ''

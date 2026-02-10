@@ -1,4 +1,3 @@
-# models/account.py - Legal entity separate from user
 from datetime import datetime, timezone
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 import uuid

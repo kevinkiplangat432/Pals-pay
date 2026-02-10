@@ -1,4 +1,3 @@
-# models/user_account.py - Link between users and accounts
 from datetime import datetime, timezone
 from ..extensions import db
 
@@ -27,7 +26,7 @@ class UserAccount(db.Model):
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=db.func.now(), nullable=True)
     
     # Relationships
-    user = db.relationship('User', foreign_keys=[user_id], backref='account_links')
+    user = db.relationship('User', foreign_keys=[user_id])
     verifier = db.relationship('User', foreign_keys=[verified_by])
     
     # Indexes
