@@ -1,16 +1,15 @@
 import { Navigate } from "react-router-dom";
-import { useContext } from "react";
-import { useAuth } from "../../contexts/AuthContext";
-import LoadingSpinner from "../common/LoadingSpinner";
+import { useSelector } from "react-redux";
 
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, status } = useSelector((state) => state.auth);
+  const token = localStorage.getItem("access_token");
 
-  if (loading) {
-    return <LoadingSpinner />;
+  if (status === "loading") {
+    return <div>Loading...</div>;
   }
 
-  if (!isAuthenticated) {
+  if (!token || !user) {
     return <Navigate to="/login" replace />;
   }
 

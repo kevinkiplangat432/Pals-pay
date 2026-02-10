@@ -9,31 +9,41 @@ from app.services.wallet_service import WalletService
 from app.services.transaction_service import TransactionService
 import uuid
 
-wallet_bp = Blueprint('wallet', __name__, url_prefix='/api/wallet')
+wallet_bp = Blueprint('wallet', __name__, url_prefix='/api/v1/wallet')
 
 
 @wallet_bp.route('/summary', methods=['GET'])
 @token_required
 def wallet_summary(current_user):
     """Get wallet summary"""
-    wallet = Wallet.query.filter_by(user_id=current_user.id).first()
-    if not wallet:
-        wallet = Wallet(user_id=current_user.id)
-        db.session.add(wallet)
-        db.session.commit()
-    
-    summary = WalletService.get_wallet_balance(current_user.id)
-    
-    return jsonify(summary), 200
+    try:
+        wallet = Wallet.query.filter_by(user_id=current_user.id).first()
+        if not wallet:
+            wallet = Wallet(user_id=current_user.id)
+            db.session.add(wallet)
+            db.session.commit()
+        
+        summary = WalletService.get_wallet_balance(current_user.id)
+        
+        return jsonify(summary), 200
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'message': f'Error: {str(e)}'}), 500
 
 
 @wallet_bp.route('/analytics', methods=['GET'])
 @token_required
 def wallet_analytics(current_user):
     """Get wallet analytics"""
-    analytics = WalletService.get_wallet_analytics(current_user.id)
-    
-    return jsonify(analytics), 200
+    try:
+        analytics = WalletService.get_wallet_analytics(current_user.id)
+        
+        return jsonify(analytics), 200
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'message': f'Error: {str(e)}'}), 500
 
 
 @wallet_bp.route('/deposit/mpesa', methods=['POST'])
@@ -286,8 +296,13 @@ def withdraw_funds(current_user):
 @token_required
 def transaction_summary(current_user):
     """Get transaction summary"""
-    days = request.args.get('days', 30, type=int)
-    
-    summary = TransactionService.get_transaction_summary(current_user.id, days)
-    
-    return jsonify(summary), 200
+    try:
+        days = request.args.get('days', 30, type=int)
+        
+        summary = TransactionService.get_transaction_summary(current_user.id, days)
+        
+        return jsonify(summary), 200
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'message': f'Error: {str(e)}'}), 500

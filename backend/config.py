@@ -231,15 +231,17 @@ class Config:
     QUOTE_EXPIRY = timedelta(minutes=15)
     INTERNATIONAL_QUOTE_EXPIRY = timedelta(minutes=30)
     
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(',')
+    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://localhost:5173').split(',')
     
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
     
     EMAIL_CONFIG = {
         'enabled': os.environ.get('EMAIL_ENABLED', 'false').lower() == 'true',
-        'api_key': os.environ.get('EMAIL_API_KEY', ''),
+        'provider': os.environ.get('EMAIL_PROVIDER', 'smtp'),
         'sender': os.environ.get('EMAIL_SENDER', 'noreply@palspay.com'),
-        'endpoint': os.environ.get('EMAIL_ENDPOINT', 'https://api.mailgun.net/v3/your-domain/messages')
+        'password': os.environ.get('EMAIL_PASSWORD', ''),
+        'smtp_host': os.environ.get('SMTP_HOST', 'smtp.gmail.com'),
+        'smtp_port': int(os.environ.get('SMTP_PORT', '587'))
     }
     
     SMS_CONFIG = {

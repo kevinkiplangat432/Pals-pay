@@ -1,4 +1,7 @@
 import requests
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from flask import current_app
 from ..models import User
 
@@ -40,15 +43,12 @@ class NotificationService:
         
         message = f"Your PalsPay login code is: {otp}. Login attempt from {ip_address}"
         
-        if user.notification_preferences.get('login_sms', True):
-            NotificationService._send_sms(user.phone_number, message)
-        
-        if user.notification_preferences.get('login_email', True):
-            NotificationService._send_email(
-                to_email=user.email,
-                subject="Login Alert",
-                body=f"Hello {user.first_name},\n\n{message}\n\nIf this wasn't you, please contact support immediately."
-            )
+        NotificationService._send_sms(user.phone_number, message)
+        NotificationService._send_email(
+            to_email=user.email,
+            subject="Login Alert",
+            body=f"Hello {user.first_name},\n\n{message}\n\nIf this wasn't you, please contact support immediately."
+        )
         
         return True
     
@@ -67,25 +67,20 @@ class NotificationService:
             sender_message += f" (International Transfer)"
             receiver_message += f" (International Transfer)"
         
-        if sender.notification_preferences.get('transfer_sms', True):
-            NotificationService._send_sms(sender.phone_number, sender_message)
+        NotificationService._send_sms(sender.phone_number, sender_message)
+        NotificationService._send_sms(receiver.phone_number, receiver_message)
         
-        if receiver.notification_preferences.get('transfer_sms', True):
-            NotificationService._send_sms(receiver.phone_number, receiver_message)
+        NotificationService._send_email(
+            to_email=sender.email,
+            subject="Transfer Sent",
+            body=f"Hello {sender.first_name},\n\n{sender_message}\n\nTransaction ID: {transaction_id}"
+        )
         
-        if sender.notification_preferences.get('transfer_email', True):
-            NotificationService._send_email(
-                to_email=sender.email,
-                subject="Transfer Sent",
-                body=f"Hello {sender.first_name},\n\n{sender_message}\n\nTransaction ID: {transaction_id}"
-            )
-        
-        if receiver.notification_preferences.get('transfer_email', True):
-            NotificationService._send_email(
-                to_email=receiver.email,
-                subject="Transfer Received",
-                body=f"Hello {receiver.first_name},\n\n{receiver_message}\n\nTransaction ID: {transaction_id}"
-            )
+        NotificationService._send_email(
+            to_email=receiver.email,
+            subject="Transfer Received",
+            body=f"Hello {receiver.first_name},\n\n{receiver_message}\n\nTransaction ID: {transaction_id}"
+        )
         
         return True
     
@@ -148,26 +143,31 @@ class NotificationService:
         
         if not email_config.get('enabled', False):
             current_app.logger.info(f"Email would be sent to {to_email}: {subject}")
+            current_app.logger.info(f"Body: {body}")
             return True
         
         try:
-            api_key = email_config.get('api_key')
             sender = email_config.get('sender')
+            password = email_config.get('password')
             
-            response = requests.post(
-                email_config.get('endpoint'),
-                auth=('api', api_key),
-                data={
-                    'from': sender,
-                    'to': to_email,
-                    'subject': subject,
-                    'text': body
-                }
-            )
+            msg = MIMEMultipart()
+            msg['From'] = sender
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'plain'))
             
-            return response.status_code == 200
+            server = smtplib.SMTP(email_config.get('smtp_host'), email_config.get('smtp_port'))
+            server.starttls()
+            server.login(sender, password)
+            server.send_message(msg)
+            server.quit()
+            
+            current_app.logger.info(f"Email sent successfully to {to_email}")
+            return True
         except Exception as e:
             current_app.logger.error(f"Failed to send email: {str(e)}")
+            current_app.logger.info(f"EMAIL FALLBACK - To: {to_email}, Subject: {subject}")
+            current_app.logger.info(f"EMAIL BODY: {body}")
             return False
     
     @staticmethod

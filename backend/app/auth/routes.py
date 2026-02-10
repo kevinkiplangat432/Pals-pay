@@ -255,6 +255,7 @@ def verify_login_otp():
     
     return jsonify({
         'message': 'OTP verified successfully',
+        'user': user.to_dict(include_wallet=True, include_accounts=True),
         'access_token': access_token,
         'refresh_token': refresh_token,
         'token_type': 'Bearer',

@@ -17,13 +17,15 @@ def create_app(config_name='default'):
     bcrypt.init_app(app)
     
     cors.init_app(
-    app,
-    resources={
-        r"/api/*": {
-            "origins": "http://localhost:5173"
+        app,
+        resources={
+            r"/api/*": {
+                "origins": app.config.get('CORS_ORIGINS', ['http://localhost:5173']),
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization"],
+                "supports_credentials": True
+            }
         }
-    },
-    supports_credentials=True
     )
 
     # cors.init_app(

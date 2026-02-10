@@ -18,7 +18,7 @@ export default function Login() {
   });
 
   useEffect(() => {
-    if (user) {
+    if (user && !user.requires_verification) {
       navigate(user.is_admin ? "/admin/dashboard" : "/wallet");
     }
   }, [user, navigate]);

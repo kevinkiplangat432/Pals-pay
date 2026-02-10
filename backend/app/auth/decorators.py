@@ -23,7 +23,7 @@ def token_required(f):
         except Exception as e:
             return jsonify({'message': 'Invalid or expired token'}), 401
         
-        return f(*args, **kwargs)
+        return f(current_user, *args, **kwargs)
     
     return decorated
 
