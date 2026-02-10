@@ -40,15 +40,12 @@ class NotificationService:
         
         message = f"Your PalsPay login code is: {otp}. Login attempt from {ip_address}"
         
-        if user.notification_preferences.get('login_sms', True):
-            NotificationService._send_sms(user.phone_number, message)
-        
-        if user.notification_preferences.get('login_email', True):
-            NotificationService._send_email(
-                to_email=user.email,
-                subject="Login Alert",
-                body=f"Hello {user.first_name},\n\n{message}\n\nIf this wasn't you, please contact support immediately."
-            )
+        NotificationService._send_sms(user.phone_number, message)
+        NotificationService._send_email(
+            to_email=user.email,
+            subject="Login Alert",
+            body=f"Hello {user.first_name},\n\n{message}\n\nIf this wasn't you, please contact support immediately."
+        )
         
         return True
     
@@ -67,25 +64,20 @@ class NotificationService:
             sender_message += f" (International Transfer)"
             receiver_message += f" (International Transfer)"
         
-        if sender.notification_preferences.get('transfer_sms', True):
-            NotificationService._send_sms(sender.phone_number, sender_message)
+        NotificationService._send_sms(sender.phone_number, sender_message)
+        NotificationService._send_sms(receiver.phone_number, receiver_message)
         
-        if receiver.notification_preferences.get('transfer_sms', True):
-            NotificationService._send_sms(receiver.phone_number, receiver_message)
+        NotificationService._send_email(
+            to_email=sender.email,
+            subject="Transfer Sent",
+            body=f"Hello {sender.first_name},\n\n{sender_message}\n\nTransaction ID: {transaction_id}"
+        )
         
-        if sender.notification_preferences.get('transfer_email', True):
-            NotificationService._send_email(
-                to_email=sender.email,
-                subject="Transfer Sent",
-                body=f"Hello {sender.first_name},\n\n{sender_message}\n\nTransaction ID: {transaction_id}"
-            )
-        
-        if receiver.notification_preferences.get('transfer_email', True):
-            NotificationService._send_email(
-                to_email=receiver.email,
-                subject="Transfer Received",
-                body=f"Hello {receiver.first_name},\n\n{receiver_message}\n\nTransaction ID: {transaction_id}"
-            )
+        NotificationService._send_email(
+            to_email=receiver.email,
+            subject="Transfer Received",
+            body=f"Hello {receiver.first_name},\n\n{receiver_message}\n\nTransaction ID: {transaction_id}"
+        )
         
         return True
     

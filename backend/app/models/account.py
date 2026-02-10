@@ -55,7 +55,6 @@ class Account(db.Model):
     
     # Relationships
     users = db.relationship('UserAccount', backref='account', lazy='dynamic', cascade='all, delete-orphan')
-    wallets = db.relationship('Wallet', backref='account', lazy='dynamic')
     
     # Indexes
     __table_args__ = (
