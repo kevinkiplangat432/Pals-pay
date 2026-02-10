@@ -111,7 +111,7 @@ export default function KycPage() {
                 value={form.document_type}
                 onChange={handleChange}
                 placeholder="e.g. national_id, passport"
-                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300"
+                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
               />
             </div>
 
@@ -124,7 +124,7 @@ export default function KycPage() {
                 value={form.document_number}
                 onChange={handleChange}
                 placeholder="Document number"
-                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300"
+                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
               />
             </div>
 
@@ -167,7 +167,7 @@ export default function KycPage() {
             <button
               type="submit"
               disabled={status === "loading"}
-              className="w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+              className="w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60"
             >
               {status === "loading" ? "Submitting…" : "Submit KYC"}
             </button>

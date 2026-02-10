@@ -51,7 +51,7 @@ export default function TransactionsPage() {
                     setPage(1);
                     setType(e.target.value);
                 }}
-                className="rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300"
+                className="rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
                 >
                 <option value="">All</option>
                 <option value="deposit">Deposit</option>

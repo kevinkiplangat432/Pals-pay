@@ -95,14 +95,14 @@ export default function UserProfilePage() {
                                 value={formData.first_name}
                                 onChange={handleChange}
                                 placeholder="First Name"
-                                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring focus:ring-slate-300"
+                                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring focus:ring-green-500"
                             />
                             <input
                                 name="last_name"
                                 value={formData.last_name}
                                 onChange={handleChange}
                                 placeholder="Last Name"
-                                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring focus:ring-slate-300"
+                                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring focus:ring-green-500"
                             />
                         </div>
 
@@ -111,7 +111,7 @@ export default function UserProfilePage() {
                             value={formData.phone_number}
                             onChange={handleChange}
                             placeholder="Phone Number (+254..."
-                            className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring focus:ring-slate-300"
+                            className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring focus:ring-green-500"
                         />
 
                         <input
@@ -119,7 +119,7 @@ export default function UserProfilePage() {
                             value={formData.date_of_birth}
                             onChange={handleChange}
                             placeholder="Date of Birth (YYYY-MM-DD)"
-                            className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring focus:ring-slate-300"
+                            className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring focus:ring-green-500"
                         />
 
                         <label className="flex items-center gap-2 text-sm text-slate-700">
@@ -128,14 +128,14 @@ export default function UserProfilePage() {
                                 name="two_factor_enabled"
                                 checked={formData.two_factor_enabled}
                                 onChange={handleChange}
-                                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                className="rounded border-slate-300 text-green-600 focus:ring-green-500"
                             />
                             Enable Two-Factor Authentication
                         </label>
 
                         <button
                             type="submit"
-                            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                            className="rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60"
                             disabled={status === "loading"}
                         >
                             {status === "loading" ? "Saving..." : "Save Changes"}

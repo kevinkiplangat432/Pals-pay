@@ -118,7 +118,7 @@ export default function PaymentMethodsPage() {
                                 name="provider"
                                 value={form.provider}
                                 onChange={handleChange}
-                                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300"
+                                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
                             >
                                 <option value="mpesa">M-Pesa</option>
                                 <option value="card">Card</option>
@@ -135,7 +135,7 @@ export default function PaymentMethodsPage() {
                                 value={form.account_reference}
                                 onChange={handleChange}
                                 placeholder="phone number, card number or account number"
-                                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300"
+                                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
                             />
                         </div>
 
@@ -148,7 +148,7 @@ export default function PaymentMethodsPage() {
                                 value={form.account_name}
                                 onChange={handleChange}
                                 placeholder="Account holder name"
-                                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300"
+                                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
                             />
                         </div>
 
@@ -163,7 +163,7 @@ export default function PaymentMethodsPage() {
                             Set as default
                         </label>
 
-                        <button type="submit" className="rounded-xl bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">
+                        <button type="submit" className="rounded-xl bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700">
                             Add Payment Method
                         </button>
                     </form>
@@ -180,7 +180,7 @@ export default function PaymentMethodsPage() {
                             value={verify.Id}
                             onChange={onVerifyChange}
                             placeholder="Payment Method Id"
-                            className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300"
+                            className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
                         />
                         
                         <input
@@ -188,10 +188,10 @@ export default function PaymentMethodsPage() {
                             value={verify.verification_token}
                             onChange={onVerifyChange}
                             placeholder="Verification Token"
-                            className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300"
+                            className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
                         />
 
-                        <button type="submit" className="w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
+                        <button type="submit" className="w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">
                             Verify Payment Method
                         </button>
                     </form>

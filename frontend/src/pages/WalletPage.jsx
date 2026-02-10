@@ -217,7 +217,7 @@ export default function WalletPage() {
                         <input
                             value={days}
                             onChange={(e) => setDays(Number(e.target.value || 30))}
-                            className='w-24 rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
+                            className='w-24 rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                             placeholder='30'
                         />
                         <button
@@ -247,18 +247,18 @@ export default function WalletPage() {
                                 value={depositForm.amount}
                                 onChange={(e) => setDepositForm((f) => ({ ...f, amount: e.target.value }))}
                                 placeholder='Amount'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
+                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                             />
                             <input
                                 value={depositForm.phone_number}
                                 onChange={(e) => setDepositForm((f) => ({ ...f, phone_number: e.target.value }))}
                                 placeholder='Phone number'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
+                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                             />
                             <button
                                 type='submit'
                                 disabled={isLoading}
-                                className='w-full rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50'
+                                className='w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700'
                             >
                                 {isLoading ? "Processing..." : "Deposit"}
                             </button>
@@ -274,18 +274,18 @@ export default function WalletPage() {
                                 value={withdrawForm.amount}
                                 onChange={(e) => setWithdrawForm((f) => ({ ...f, amount: e.target.value }))}
                                 placeholder='Amount'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
+                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                             />
                             <input
                                 value={withdrawForm.payment_method_id}
                                 onChange={(e) => setWithdrawForm((f) => ({ ...f, payment_method_id: e.target.value }))}
                                 placeholder='Payment Method ID (verified)'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
+                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                             />
                             <button
                                 type='submit'
                                 disabled={isLoading}
-                                className='w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60'
+                                className='w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60'
                             >
                                 {isLoading ? "Processing..." : "Withdraw"}
                             </button>
@@ -301,24 +301,24 @@ export default function WalletPage() {
                                 value={transferWalletForm.beneficiary_wallet_id}
                                 onChange={(e) => setTransferWalletForm((f) => ({ ...f, beneficiary_wallet_id: e.target.value }))}
                                 placeholder='Beneficiary Wallet ID'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
+                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                             />
                             <input
                                 value={transferWalletForm.amount}
                                 onChange={(e) => setTransferWalletForm((f) => ({ ...f, amount: e.target.value }))}
                                 placeholder='Amount'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
+                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                             />
                             <input
                                 value={transferWalletForm.description}
                                 onChange={(e) => setTransferWalletForm((f) => ({ ...f, description: e.target.value }))}
                                 placeholder='Description (optional)'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
+                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                             />
                             <button
                                 type='submit'
                                 disabled={isLoading}
-                                className='w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60'
+                                className='w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60'
                             >
                                 {isLoading ? "Processing..." : " Send Transfer"}
                             </button>
@@ -334,24 +334,24 @@ export default function WalletPage() {
                                 value={transferPhoneForm.phone_number}
                                 onChange={(e) => setTransferPhoneForm((f) => ({ ...f, phone_number: e.target.value }))}
                                 placeholder='Phone number (+254...)'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
+                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                             />
                             <input
                                 value={transferPhoneForm.amount}
                                 onChange={(e) => setTransferPhoneForm((f) => ({ ...f, amount: e.target.value }))}
                                 placeholder='Amount'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
+                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                             />
                             <input
                                 value={transferPhoneForm.description}
                                 onChange={(e) => setTransferPhoneForm((f) => ({ ...f, description: e.target.value }))}
                                 placeholder='Description (optional)'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
+                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                             />
                             <button
                                 type='submit'
                                 disabled={isLoading}
-                                className='w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60'
+                                className='w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60'
                             >
                                 {isLoading ? "Processing..." : " Send Transfer"}
                             </button>
