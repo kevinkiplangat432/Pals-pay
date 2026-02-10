@@ -1,4 +1,7 @@
 import requests
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from flask import current_app
 from ..models import User
 
@@ -140,24 +143,27 @@ class NotificationService:
         
         if not email_config.get('enabled', False):
             current_app.logger.info(f"Email would be sent to {to_email}: {subject}")
+            current_app.logger.info(f"Body: {body}")
             return True
         
         try:
-            api_key = email_config.get('api_key')
             sender = email_config.get('sender')
+            password = email_config.get('password')
             
-            response = requests.post(
-                email_config.get('endpoint'),
-                auth=('api', api_key),
-                data={
-                    'from': sender,
-                    'to': to_email,
-                    'subject': subject,
-                    'text': body
-                }
-            )
+            msg = MIMEMultipart()
+            msg['From'] = sender
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'plain'))
             
-            return response.status_code == 200
+            server = smtplib.SMTP(email_config.get('smtp_host'), email_config.get('smtp_port'))
+            server.starttls()
+            server.login(sender, password)
+            server.send_message(msg)
+            server.quit()
+            
+            current_app.logger.info(f"Email sent successfully to {to_email}")
+            return True
         except Exception as e:
             current_app.logger.error(f"Failed to send email: {str(e)}")
             return False

@@ -13,7 +13,7 @@ import {
 
 export default function WalletPage() {
     const dispatch = useDispatch();
-    const { analytics, summary, transactionSummary, status, error, success } = useSelector((s) => s.wallet);
+    const { analytics, summary, transactionSummary, status, error, success } = useSelector((s) => s.wallet || {});
 
     const [days, setDays] = useState(30);
 

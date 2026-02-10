@@ -206,24 +206,5 @@ class OTPService:
     
     @staticmethod
     def is_login_otp_required(user, ip_address):
-        from datetime import datetime, timedelta, timezone
-        
-        if not user.two_factor_enabled:
-            return False
-        
-        trusted_ips = user.trusted_ips or []
-        if ip_address in trusted_ips:
-            return False
-        
-        last_login = user.last_login_at
-        if last_login:
-            time_since_last_login = datetime.now(timezone.utc) - last_login
-            if time_since_last_login < timedelta(hours=24):
-                return False
-        
-        new_device = not user.last_device_id or user.last_device_id != request.user_agent.string
-        
-        if new_device or ip_address not in trusted_ips:
-            return True
-        
-        return False
+        # Always require OTP for login via email
+        return True
