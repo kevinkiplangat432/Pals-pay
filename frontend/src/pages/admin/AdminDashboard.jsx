@@ -28,28 +28,28 @@ const AdminDashboard = () => {
         <StatsCard
           title="Total Users"
           value={stats.total || 0}
-          icon="👥"
+          icon="users"
           color="bg-blue-100"
           subtitle={`${stats.active || 0} active`}
         />
         <StatsCard
           title="Today's Transactions"
           value={systemStats?.transactions?.today_count || 0}
-          icon="💸"
+          icon="dollar"
           color="bg-green-100"
           subtitle={`KES ${systemStats?.transactions?.today_volume || 0}`}
         />
         <StatsCard
           title="KYC Verified"
           value={stats.kyc_verified || 0}
-          icon="✅"
+          icon="check"
           color="bg-purple-100"
           subtitle={`${stats.kyc_pending || 0} pending`}
         />
         <StatsCard
           title="Total Balance"
           value={`KES ${systemStats?.wallets?.total_balance || 0}`}
-          icon="💰"
+          icon="wallet"
           color="bg-yellow-100"
           subtitle={`${systemStats?.wallets?.total || 0} wallets`}
         />

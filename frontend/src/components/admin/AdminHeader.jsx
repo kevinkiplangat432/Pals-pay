@@ -1,12 +1,28 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchUserProfile } from '../../features/profileSlice';
 
 const AdminHeader = ({ toggleSidebar, sidebarOpen }) => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
+  const dispatch = useDispatch();
+  const { profile } = useSelector((state) => state.user);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    if (!profile) {
+      dispatch(fetchUserProfile());
+    }
+  }, [dispatch, profile]);
+
+  useEffect(() => {
+    if (profile && user) {
+      updateUser({ ...user, ...profile });
+    }
+  }, [profile]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -54,29 +70,10 @@ const AdminHeader = ({ toggleSidebar, sidebarOpen }) => {
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="relative">
-            <button className="p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-lg">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                />
-              </svg>
-              <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-            </button>
-          </div>
-
           <div className="flex items-center space-x-3 border-l border-gray-200 pl-4">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-gray-800">
-                {user?.username || 'Admin'}
+                {user?.first_name || user?.username || 'Admin'}
               </p>
               <p className="text-xs text-gray-500">Administrator</p>
             </div>
@@ -87,7 +84,7 @@ const AdminHeader = ({ toggleSidebar, sidebarOpen }) => {
                 className="flex items-center space-x-2 focus:outline-none"
               >
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-white font-bold">
-                  {user?.username?.[0]?.toUpperCase() || 'A'}
+                  {user?.first_name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || 'A'}
                 </div>
               </button>
               

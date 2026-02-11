@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import api from "../../services/api";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import EmptyState from "../../components/common/EmptyState";
@@ -12,6 +13,7 @@ const AdminWallets = () => {
   );
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedWallet, setSelectedWallet] = useState(null);
 
   useEffect(() => {
     dispatch(loadWallets(filters));
@@ -20,6 +22,16 @@ const AdminWallets = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     dispatch(setFilters({ search: searchTerm, page: 1 }));
+  };
+
+  const handleFreezeToggle = async (walletId, currentStatus) => {
+    const newStatus = currentStatus === 'active' ? 'frozen' : 'active';
+    try {
+      await api.put(`/admin/wallets/${walletId}/status`, { status: newStatus });
+      dispatch(loadWallets(filters));
+    } catch (error) {
+      console.error('Failed to update wallet status:', error);
+    }
   };
 
   const handlePageChange = (page) => {
@@ -93,7 +105,7 @@ const AdminWallets = () => {
         <LoadingSpinner />
       ) : wallets.length === 0 ? (
         <EmptyState
-          icon="💰"
+          icon="wallet"
           title="No Wallets Found"
           message="Try adjusting your search criteria"
         />
@@ -173,11 +185,17 @@ const AdminWallets = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-green-600 hover:text-green-900 mr-3">
+                      <button 
+                        onClick={() => setSelectedWallet(wallet)}
+                        className="text-green-600 hover:text-green-900 mr-3"
+                      >
                         View Details
                       </button>
-                      <button className="text-red-600 hover:text-red-900">
-                        {wallet.status === "active" ? "Freeze" : "Unfreeze"}
+                      <button 
+                        onClick={() => handleFreezeToggle(wallet.id, wallet.status || 'active')}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        {(wallet.status || 'active') === "active" ? "Freeze" : "Unfreeze"}
                       </button>
                     </td>
                   </tr>
@@ -212,6 +230,34 @@ const AdminWallets = () => {
             </div>
           )}
         </>
+      )}
+
+      {selectedWallet && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setSelectedWallet(null)}>
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Wallet Details</h2>
+              <button onClick={() => setSelectedWallet(null)} className="text-gray-500 hover:text-gray-700">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div><span className="font-semibold">Wallet ID:</span> {selectedWallet.id}</div>
+                <div><span className="font-semibold">Currency:</span> {selectedWallet.currency || 'KES'}</div>
+                <div><span className="font-semibold">User:</span> {selectedWallet.user?.first_name} {selectedWallet.user?.last_name}</div>
+                <div><span className="font-semibold">Email:</span> {selectedWallet.user?.email}</div>
+                <div><span className="font-semibold">Balance:</span> {formatCurrency(selectedWallet.balance, selectedWallet.currency)}</div>
+                <div><span className="font-semibold">Available:</span> {formatCurrency(selectedWallet.available_balance, selectedWallet.currency)}</div>
+                <div><span className="font-semibold">Daily Limit:</span> {formatCurrency(selectedWallet.daily_limit, selectedWallet.currency)}</div>
+                <div><span className="font-semibold">Monthly Limit:</span> {formatCurrency(selectedWallet.monthly_limit, selectedWallet.currency)}</div>
+                <div><span className="font-semibold">Status:</span> <span className={`px-2 py-1 rounded text-xs ${(selectedWallet.status || 'active') === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{selectedWallet.status || 'active'}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -140,6 +140,38 @@ def get_all_wallets(current_user):
         'current_page': page
     }), 200
 
+# Update wallet status
+@admin_bp.route('/wallets/<int:wallet_id>/status', methods=['PUT'])
+@token_required
+@role_required('admin')
+def update_wallet_status(current_user, wallet_id):
+    wallet = Wallet.query.get_or_404(wallet_id)
+    data = request.get_json()
+    
+    if 'status' not in data:
+        return jsonify({'message': 'Missing status field'}), 400
+    
+    from app.models.enums import WalletStatus
+    old_status = wallet.status
+    wallet.status = WalletStatus(data['status'])
+    
+    db.session.commit()
+    
+    AuditLog.log_admin_action(
+        actor_id=request.current_user.id,
+        action='wallet.status.update',
+        resource_type='wallet',
+        resource_id=wallet.id,
+        old_values={'status': old_status.value if old_status else None},
+        new_values={'status': wallet.status.value},
+        status='success'
+    )
+    
+    return jsonify({
+        'message': f'Wallet status updated to {wallet.status.value}',
+        'wallet': wallet.to_dict()
+    }), 200
+
 # Get all transactions
 @admin_bp.route('/transactions', methods=['GET'])
 @token_required

@@ -55,7 +55,7 @@ const AdminKyc = () => {
         <LoadingSpinner />
       ) : kycVerifications.length === 0 ? (
         <EmptyState
-          icon="✅"
+          icon="check"
           title="No Pending KYC Verifications"
           message="All KYC submissions have been processed"
         />
