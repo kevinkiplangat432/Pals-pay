@@ -31,11 +31,10 @@ def token_required(f):
 def role_required(required_role):
     def decorator(f):
         @wraps(f)
-        @token_required
-        def decorated_function(*args, **kwargs):
-            if required_role == "admin" and not request.current_user.is_admin:
+        def decorated_function(current_user, *args, **kwargs):
+            if required_role == "admin" and not current_user.is_admin:
                 return jsonify({'message': 'Admin access required'}), 403
-            return f(*args, **kwargs)
+            return f(current_user, *args, **kwargs)
         return decorated_function
     return decorator
 

@@ -10,13 +10,13 @@ from app.auth.decorators import token_required, role_required, kyc_required, otp
 from app.services.analytics_service import AnalyticsService
 from app.services.kyc_service import KYCService
 
-admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')
+admin_bp = Blueprint('admin', __name__, url_prefix='/api/v1/admin')
 
 # Get all users with pagination
 @admin_bp.route('/users', methods=['GET'])
 @token_required
 @role_required('admin')
-def get_all_users():
+def get_all_users(current_user):
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     
@@ -99,7 +99,7 @@ def toggle_user_status(user_id):
 @admin_bp.route('/wallets', methods=['GET'])
 @token_required
 @role_required('admin')
-def get_all_wallets():
+def get_all_wallets(current_user):
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     
@@ -144,7 +144,7 @@ def get_all_wallets():
 @admin_bp.route('/transactions', methods=['GET'])
 @token_required
 @role_required('admin')
-def get_all_transactions():
+def get_all_transactions(current_user):
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 50, type=int)
     
@@ -193,7 +193,7 @@ def get_all_transactions():
 @admin_bp.route('/stats', methods=['GET'])
 @token_required
 @role_required('admin')
-def get_system_stats():
+def get_system_stats(current_user):
     stats = AnalyticsService.get_system_analytics()
     return jsonify(stats), 200
 
@@ -266,7 +266,7 @@ def reverse_transaction(tx_id, current_user):
 @admin_bp.route('/suspicious-activities', methods=['GET'])
 @token_required
 @role_required('admin')
-def get_suspicious_activities():
+def get_suspicious_activities(current_user):
     suspicious = AnalyticsService.get_suspicious_activities()
     return jsonify(suspicious), 200
 
@@ -274,11 +274,11 @@ def get_suspicious_activities():
 @admin_bp.route('/kyc/pending', methods=['GET'])
 @token_required
 @role_required('admin')
-def get_pending_kyc():
+def get_pending_kyc(current_user):
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     
-    query = KYCVerification.query.filter_by(status=KYCStatus.pending).join(User)
+    query = KYCVerification.query.filter_by(status=KYCStatus.pending).join(User, KYCVerification.user_id == User.id)
     
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     
@@ -318,7 +318,7 @@ def verify_kyc(kyc_id):
 @admin_bp.route('/analytics/profit-trends', methods=['GET'])
 @token_required
 @role_required('admin')
-def get_profit_trends():
+def get_profit_trends(current_user):
     days = request.args.get('days', 30, type=int)
     trends = AnalyticsService.get_profit_trends(days)
     return jsonify(trends), 200
@@ -327,7 +327,7 @@ def get_profit_trends():
 @admin_bp.route('/audit-logs', methods=['GET'])
 @token_required
 @role_required('admin')
-def get_audit_logs():
+def get_audit_logs(current_user):
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 50, type=int)
     
