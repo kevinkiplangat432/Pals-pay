@@ -73,8 +73,9 @@ const AdminUsers = () => {
             className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
           >
             <option value="">All KYC Status</option>
-            <option value="verified">Verified</option>
+            <option value="unverified">Unverified</option>
             <option value="pending">Pending</option>
+            <option value="verified">Verified</option>
             <option value="rejected">Rejected</option>
           </select>
         </div>

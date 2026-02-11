@@ -26,6 +26,7 @@ import AdminWallets from "./pages/admin/AdminWallets";
 import AdminTransactions from "./pages/admin/AdminTransactions";
 import AdminKyc from "./pages/admin/AdminKyc";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminProfile from "./pages/admin/AdminProfile";
 
 function App() {
   return (
@@ -68,6 +69,7 @@ function App() {
         <Route path="transactions" element={<AdminTransactions />} />
         <Route path="kyc" element={<AdminKyc />} />
         <Route path="analytics" element={<AdminAnalytics />} />
+        <Route path="profile" element={<AdminProfile />} />
         
       </Route>
     </Routes>

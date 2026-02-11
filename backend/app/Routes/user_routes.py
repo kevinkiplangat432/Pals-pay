@@ -68,11 +68,6 @@ def update_user_profile(current_user):
         except (ValueError, AttributeError):
             return jsonify({'message': 'Invalid date format. Use ISO format (YYYY-MM-DD)'}), 400
     
-    # Update two-factor authentication setting
-    if 'two_factor_enabled' in data:
-        changes['two_factor_enabled'] = user.two_factor_enabled
-        user.two_factor_enabled = bool(data['two_factor_enabled'])
-    
     try:
         db.session.commit()
         

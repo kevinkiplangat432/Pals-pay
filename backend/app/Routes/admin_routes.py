@@ -67,7 +67,7 @@ def get_all_users(current_user):
 @admin_bp.route('/users/<int:user_id>/status', methods=['PUT'])
 @token_required
 @role_required('admin')
-def toggle_user_status(user_id):
+def toggle_user_status(current_user, user_id):
     user = User.query.get_or_404(user_id)
     data = request.get_json()
     
@@ -299,7 +299,7 @@ def get_pending_kyc(current_user):
 @admin_bp.route('/kyc/<int:kyc_id>/verify', methods=['POST'])
 @token_required
 @role_required('admin')
-def verify_kyc(kyc_id):
+def verify_kyc(current_user, kyc_id):
     data = request.get_json()
     approved = data.get('approved', True)
     rejection_reason = data.get('rejection_reason')
