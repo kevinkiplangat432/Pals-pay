@@ -74,20 +74,32 @@ export default function WalletPage() {
     async function onDeposit(e) {
         e.preventDefault();
         resetMessages();
-    
-
-    const amount = Number(depositForm.amount);
-    const phone_number = depositForm.phone_number.trim();
-
-    if (!amount || amount <= 0) return;
-
-    const res = await dispatch(depositMpesa({ amount, phone_number }));
-    if (depositMpesa.fulfilled.match(res)) {
-        setDepositForm({ amount: "", phone_number: "" });
-        dispatch(fetchWalletSummary());
-        dispatch(fetchTransactionSummary({ days }));
+        
+        const amount = Number(depositForm.amount);
+        const phone_number = depositForm.phone_number.trim();
+        
+        console.log('Deposit form submitted:', { amount, phone_number });
+        
+        if (!amount || amount <= 0) {
+            console.error('Invalid amount:', amount);
+            return;
+        }
+        
+        if (!phone_number) {
+            console.error('Phone number required');
+            return;
+        }
+        
+        console.log('Dispatching depositMpesa...');
+        const res = await dispatch(depositMpesa({ amount, phone_number }));
+        console.log('Deposit result:', res);
+        
+        if (depositMpesa.fulfilled.match(res)) {
+            setDepositForm({ amount: "", phone_number: "" });
+            dispatch(fetchWalletSummary());
+            dispatch(fetchTransactionSummary({ days }));
+        }
     }
-}
 
 
     async function onTransferWallet(e) {

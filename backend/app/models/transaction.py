@@ -160,7 +160,14 @@ class Transaction(db.Model):
     
     def __init__(self, **kwargs):
         """Initialize with calculated net_amount and FX information"""
+        # Handle metadata separately to avoid issues
+        metadata = kwargs.pop('metadata', None)
+        
         super().__init__(**kwargs)
+        
+        # Set metadata after initialization
+        if metadata:
+            self.meta_data = metadata
         
         # Calculate net amount
         if 'amount' in kwargs and 'fee' in kwargs:
@@ -330,7 +337,7 @@ class Transaction(db.Model):
             'is_reportable': self.is_reportable,
             'reported_at': self.reported_at.isoformat() if self.reported_at else None,
             'sequence_number': self.sequence_number,
-            'metadata': self.metadata,
+            'metadata': self.meta_data,  # Fixed: use meta_data field
             'channel': self.channel,
             'ip_address': self.ip_address,
             'device_id': self.device_id,

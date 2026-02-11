@@ -503,3 +503,114 @@ def get_supported_currencies():
         'currencies': currency_data,
         'count': len(currencies)
     }), 200
+
+@auth_bp.route('/google', methods=['POST'])
+def google_auth():
+    """Handle Google OAuth sign-in/sign-up"""
+    data = request.get_json()
+    
+    email = data.get('email')
+    name = data.get('name', '')
+    picture = data.get('picture')
+    
+    if not email:
+        return jsonify({'message': 'Email is required'}), 400
+    
+    # Check if user exists
+    user = User.query.filter_by(email=email).first()
+    
+    if user:
+        # Existing user - login
+        if not user.is_active:
+            return jsonify({'message': 'Account is deactivated'}), 403
+        
+        user.last_login_at = datetime.now(timezone.utc)
+    else:
+        # New user - register
+        name_parts = name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+        
+        try:
+            user = User(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                username=email.split('@')[0],
+                country_code='KE',  # Default
+                region='east_africa',
+                is_active=True,
+                is_verified=True,  # Google accounts are pre-verified
+                profile_picture=picture
+            )
+            # No password for Google OAuth users
+            user.password_hash = None
+            
+            db.session.add(user)
+            db.session.flush()
+            
+            # Create account
+            account = Account(
+                account_type='individual',
+                legal_name=name,
+                primary_email=email,
+                country_of_incorporation='KE',
+                kyc_status='pending'
+            )
+            
+            db.session.add(account)
+            db.session.flush()
+            
+            user_account = UserAccount(
+                user_id=user.id,
+                account_id=account.id,
+                role='owner',
+                is_primary=True,
+                is_active=True
+            )
+            
+            db.session.add(user_account)
+            
+            AuditLog.log_user_action(
+                actor_id=user.id,
+                action='user_registered_google',
+                resource_type='user',
+                resource_id=user.id,
+                actor_ip=request.remote_addr
+            )
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f'Google auth error: {str(e)}')
+            return jsonify({'message': 'Registration failed'}), 500
+    
+    # Create tokens
+    access_token = create_access_token(
+        identity=str(user.id),
+        additional_claims={
+            'type': 'access',
+            'is_admin': user.is_admin,
+            'kyc_status': user.kyc_status.value,
+            'account_id': user.primary_account.id if user.primary_account else None
+        }
+    )
+    
+    refresh_token = create_refresh_token(identity=str(user.id))
+    
+    AuditLog.log_user_action(
+        actor_id=user.id,
+        action='user_login_google',
+        resource_type='user',
+        resource_id=user.id,
+        actor_ip=request.remote_addr
+    )
+    
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Google authentication successful',
+        'user': user.to_dict(include_wallet=True, include_accounts=True),
+        'access_token': access_token,
+        'refresh_token': refresh_token,
+        'token_type': 'Bearer',
+        'expires_in': current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds
+    }), 200

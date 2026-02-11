@@ -48,6 +48,8 @@ def create_app(config_name='default'):
     from .Routes.payment_routes import payment_bp
     from .Routes.transfer_routes import transfer_bp
     from .Routes.contact_routes import contact_bp
+    from .Routes.mpesa_routes import mpesa_bp
+    from .Routes.deposit_routes import deposit_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
@@ -58,6 +60,8 @@ def create_app(config_name='default'):
     app.register_blueprint(payment_bp)
     app.register_blueprint(transfer_bp)
     app.register_blueprint(contact_bp)
+    app.register_blueprint(mpesa_bp)
+    app.register_blueprint(deposit_bp)
     
     uploads_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
     os.makedirs(uploads_dir, exist_ok=True)
