@@ -42,14 +42,13 @@ def role_required(required_role):
 
 def kyc_required(f):
     @wraps(f)
-    @token_required
-    def decorated(*args, **kwargs):
-        if request.current_user.kyc_status.value != 'verified':
+    def decorated(current_user, *args, **kwargs):
+        if current_user.kyc_status.value != 'verified':
             return jsonify({
                 'message': 'KYC verification required',
-                'kyc_status': request.current_user.kyc_status.value
+                'kyc_status': current_user.kyc_status.value
             }), 403
-        return f(*args, **kwargs)
+        return f(current_user, *args, **kwargs)
     return decorated
 
 
