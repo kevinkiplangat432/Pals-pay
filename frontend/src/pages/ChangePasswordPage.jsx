@@ -4,7 +4,7 @@ import { changePassword, clearUserMessages } from '../features/profileSlice';
 
 export default function ChangePasswordPage() {
     const dispatch = useDispatch();
-    const { status, error, success } = useSelector((state) => state.profile);
+    const { status, error, success } = useSelector((state) => state.user);
 
     const [formData, setFormData] = useState({
         current_password: "",

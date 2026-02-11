@@ -8,7 +8,7 @@ from ..auth.decorators import token_required , kyc_required, otp_required
 from ..services.kyc_service import KYCService
 from werkzeug.security import generate_password_hash
 
-user_bp = Blueprint('user', __name__, url_prefix='/api/user')
+user_bp = Blueprint('user', __name__, url_prefix='/api/v1/user')
 
 # Phone number regex
 PHONE_REGEX = r'^\+?[1-9]\d{1,14}$'  # E.164 format
