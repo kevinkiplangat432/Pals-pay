@@ -1,6 +1,10 @@
 # PalsPay - Digital Wallet & Payment Platform
 
 A full-stack digital wallet application supporting multi-currency transactions, M-Pesa integration, KYC verification, and comprehensive admin management.
+### live links
+#### frontend: https://pals-pay-du73.vercel.app/
+#### backend : https://pals-pay.onrender.com
+#### database: postgresql://pals_pay_db_user:e06tMRqzItWJ7Hjwwf5j5lNlpOZhiEue@dpg-d66m2i06fj8s7398ke10-a/pals_pay_db
 
 ##  Features
 
