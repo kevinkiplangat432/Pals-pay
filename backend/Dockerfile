@@ -27,5 +27,5 @@ RUN chmod +x build.sh seed_admin.py
 # Expose port
 EXPOSE 10000
 
-# Run migrations and seed on startup, then start server
-CMD flask db upgrade && python seed_admin.py && gunicorn run:app --bind 0.0.0.0:10000
+# Run migrations and seed on startup, then start server with config file
+CMD flask db upgrade && python seed_admin.py && gunicorn run:app -c gunicorn_config.py
