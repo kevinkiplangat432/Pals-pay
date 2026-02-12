@@ -110,49 +110,26 @@ def mpesa_callback():
 
 @wallet_bp.route('/transfer', methods=['POST'])
 @token_required
-def transfer_to_beneficiary(current_user):
-    """Transfer to beneficiary"""
+def transfer_funds(current_user):
+    """Transfer funds to another user by phone number"""
     data = request.get_json()
     
-    beneficiary_wallet_id = data.get('beneficiary_wallet_id')
+    receiver_phone = data.get('receiver_phone') or data.get('phone_number')
     amount = data.get('amount')
     description = data.get('description')
     
-    if not beneficiary_wallet_id or not amount:
-        return jsonify({'message': 'Beneficiary wallet ID and amount are required'}), 400
+    if not receiver_phone or not amount:
+        return jsonify({'message': 'Receiver phone number and amount are required'}), 400
     
-    # Process transfer
-    result = TransactionService.create_transfer(
-        sender_user_id=current_user.id,
-        receiver_wallet_id=beneficiary_wallet_id,
-        amount=amount,
-        description=description
-    )
-    
-    if result['success']:
-        return jsonify(result), 200
-    else:
-        return jsonify(result), 400
-
-
-@wallet_bp.route('/transfer/phone', methods=['POST'])
-@token_required
-def transfer_to_phone(current_user):
-    """Transfer to phone number"""
-    data = request.get_json()
-    
-    phone_number = data.get('phone_number')
-    amount = data.get('amount')
-    description = data.get('description')
-    
-    if not phone_number or not amount:
-        return jsonify({'message': 'Phone number and amount are required'}), 400
-    
-    # Find user by phone number
+    # Find receiver by phone number
     from app.models import User
-    receiver_user = User.query.filter_by(phone_number=phone_number, is_active=True).first()
+    receiver_user = User.query.filter_by(phone_number=receiver_phone, is_active=True).first()
     if not receiver_user:
         return jsonify({'message': 'User with this phone number not found'}), 404
+    
+    # Prevent self-transfer
+    if receiver_user.id == current_user.id:
+        return jsonify({'message': 'Cannot transfer to yourself'}), 400
     
     # Get receiver's wallet
     receiver_wallet = Wallet.query.filter_by(user_id=receiver_user.id).first()
@@ -164,7 +141,7 @@ def transfer_to_phone(current_user):
         sender_user_id=current_user.id,
         receiver_wallet_id=receiver_wallet.id,
         amount=amount,
-        description=description or f"Transfer to {phone_number}"
+        description=description or f"Transfer to {receiver_phone}"
     )
     
     if result['success']:

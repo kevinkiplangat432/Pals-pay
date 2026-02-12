@@ -6,8 +6,7 @@ import {
     fetchWalletAnalytics, 
     fetchWalletSummary, 
     fetchTransactionSummary, 
-    transferToBeneficiaryWallet,
-    transferToPhone,
+    transferFunds,
     withdrawFunds,
  } from '../features/walletSlice';
 
@@ -22,14 +21,8 @@ export default function WalletPage() {
         phone_number: "",
     });
 
-    const [transferPhoneForm, setTransferPhoneForm] = useState({
-        phone_number: "",
-        amount: "",
-        description: "",
-    });
-
-    const [transferWalletForm, setTransferWalletForm] = useState({
-        beneficiary_wallet_id: "",
+    const [transferForm, setTransferForm] = useState({
+        receiver_phone: "",
         amount: "",
         description: "",
     });
@@ -89,48 +82,24 @@ export default function WalletPage() {
         }
     }
 
-    async function onTransferWallet(e) {
+    async function onTransfer(e) {
         e.preventDefault();
         resetMessages();
 
-        const beneficiary_wallet_id = Number(transferWalletForm.beneficiary_wallet_id);
-        const amount = Number(transferWalletForm.amount);
+        const receiver_phone = transferForm.receiver_phone.trim();
+        const amount = Number(transferForm.amount);
 
-        if (!beneficiary_wallet_id || !amount || amount <= 0) return;
-
-        const res = await dispatch(
-          transferToBeneficiaryWallet({
-            beneficiary_wallet_id, 
-            amount, 
-            description: transferWalletForm.description || undefined}
-        ));
-
-        if (transferToBeneficiaryWallet.fulfilled.match(res)) {
-            setTransferWalletForm({ beneficiary_wallet_id: "", amount: "", description: "" });
-            dispatch(fetchWalletSummary());
-            dispatch(fetchWalletAnalytics());
-            dispatch(fetchTransactionSummary({ days }));
-        }
-    }
-
-    async function onTransferPhone(e) {
-        e.preventDefault();
-        resetMessages();
-
-        const phone_number = transferPhoneForm.phone_number.trim();
-        const amount = Number(transferPhoneForm.amount);
-
-        if (!phone_number || !amount || amount <= 0) return;
+        if (!receiver_phone || !amount || amount <= 0) return;
 
         const res = await dispatch(
-          transferToPhone({
-            phone_number, 
+          transferFunds({
+            receiver_phone, 
             amount, 
-            description: transferPhoneForm.description || undefined}
+            description: transferForm.description || undefined}
         ));
 
-        if (transferToPhone.fulfilled.match(res)) {
-            setTransferPhoneForm({ phone_number: "", amount: "", description: "" });
+        if (transferFunds.fulfilled.match(res)) {
+            setTransferForm({ receiver_phone: "", amount: "", description: "" });
             dispatch(fetchWalletSummary());
             dispatch(fetchWalletAnalytics());
             dispatch(fetchTransactionSummary({ days }));
@@ -305,10 +274,43 @@ export default function WalletPage() {
 
                 <div className='rounded-2xl border bg-white p-5 shadow-sm'>
                     <h2 className='text-sm font-semibold text-slate-700'>
+                        Transfer to Phone Number
+                    </h2>
+                    <form onSubmit={onTransfer} className='mt-4 space-y-3'>
+                        <input
+                            value={transferForm.receiver_phone}
+                            onChange={(e) => setTransferForm((f) => ({ ...f, receiver_phone: e.target.value }))}
+                            placeholder='Receiver phone number (+254...)'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <input
+                            value={transferForm.amount}
+                            onChange={(e) => setTransferForm((f) => ({ ...f, amount: e.target.value }))}
+                            placeholder='Amount'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <input
+                            value={transferForm.description}
+                            onChange={(e) => setTransferForm((f) => ({ ...f, description: e.target.value }))}
+                            placeholder='Description (optional)'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <button
+                            type='submit'
+                            disabled={isLoading}
+                            className='w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60'
+                        >
+                            {isLoading ? "Processing..." : "Send Transfer"}
+                        </button>
+                    </form>
+                </div>
+
+                <div className='rounded-2xl border bg-white p-5 shadow-sm lg:col-span-2'>
+                    <h2 className='text-sm font-semibold text-slate-700'>
                         Withdraw
                     </h2>
 
-                    <form onSubmit={onWithdraw} className='mt-4 space-y-3'>
+                    <form onSubmit={onWithdraw} className='mt-4 grid gap-3 md:grid-cols-3'>
                         <input
                             value={withdrawForm.amount}
                             onChange={(e) => setWithdrawForm((f) => ({ ...f, amount: e.target.value }))}
@@ -318,7 +320,7 @@ export default function WalletPage() {
                         <input
                             value={withdrawForm.payment_method_id}
                             onChange={(e) => setWithdrawForm((f) => ({ ...f, payment_method_id: e.target.value }))}
-                            placeholder='Payment Method ID (verified)'
+                            placeholder='Payment Method ID'
                             className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                         />
                         <button
@@ -327,72 +329,6 @@ export default function WalletPage() {
                             className='w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60'
                         >
                             {isLoading ? "Processing..." : "Withdraw"}
-                        </button>
-                    </form>
-                </div>
-
-                <div className='rounded-2xl border bg-white p-5 shadow-sm'>
-                    <h2 className='text-sm font-semibold text-slate-700'>
-                        Transfer to beneficiary wallet
-                    </h2>
-                    <form onSubmit={onTransferWallet} className='mt-4 space-y-3'>
-                        <input
-                            value={transferWalletForm.beneficiary_wallet_id}
-                            onChange={(e) => setTransferWalletForm((f) => ({ ...f, beneficiary_wallet_id: e.target.value }))}
-                            placeholder='Beneficiary Wallet ID'
-                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
-                        />
-                        <input
-                            value={transferWalletForm.amount}
-                            onChange={(e) => setTransferWalletForm((f) => ({ ...f, amount: e.target.value }))}
-                            placeholder='Amount'
-                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
-                        />
-                        <input
-                            value={transferWalletForm.description}
-                            onChange={(e) => setTransferWalletForm((f) => ({ ...f, description: e.target.value }))}
-                            placeholder='Description (optional)'
-                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
-                        />
-                        <button
-                            type='submit'
-                            disabled={isLoading}
-                            className='w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60'
-                        >
-                            {isLoading ? "Processing..." : "Send Transfer"}
-                        </button>
-                    </form>
-                </div>
-
-                <div className='rounded-2xl border bg-white p-5 shadow-sm'>
-                    <h2 className='text-sm font-semibold text-slate-700'>
-                        Transfer to phone number
-                    </h2>
-                    <form onSubmit={onTransferPhone} className='mt-4 space-y-3'>
-                        <input
-                            value={transferPhoneForm.phone_number}
-                            onChange={(e) => setTransferPhoneForm((f) => ({ ...f, phone_number: e.target.value }))}
-                            placeholder='Phone number (+254...)'
-                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
-                        />
-                        <input
-                            value={transferPhoneForm.amount}
-                            onChange={(e) => setTransferPhoneForm((f) => ({ ...f, amount: e.target.value }))}
-                            placeholder='Amount'
-                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
-                        />
-                        <input
-                            value={transferPhoneForm.description}
-                            onChange={(e) => setTransferPhoneForm((f) => ({ ...f, description: e.target.value }))}
-                            placeholder='Description (optional)'
-                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
-                        />
-                        <button
-                            type='submit'
-                            disabled={isLoading}
-                            className='w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60'
-                        >
-                            {isLoading ? "Processing..." : "Send Transfer"}
                         </button>
                     </form>
                 </div>

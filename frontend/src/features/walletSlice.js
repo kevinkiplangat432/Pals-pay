@@ -24,17 +24,10 @@ export const depositMpesa = createAsyncThunk("wallet/depositMpesa", async ({ amo
     }
 });
 
-export const transferToBeneficiaryWallet = createAsyncThunk("wallet/transferToBeneficiaryWallet", async ({ beneficiary_wallet_id, amount, description }) => {
+export const transferFunds = createAsyncThunk("wallet/transferFunds", async ({ receiver_phone, amount, description }) => {
     return await apiFetch("/transfer", {
         method: "POST",
-        body: { beneficiary_wallet_id, amount, description },
-    });
-});
-
-export const transferToPhone = createAsyncThunk("wallet/transferToPhone", async ({ phone_number, amount, description }) => {
-    return await apiFetch("/transfer", {
-        method: "POST",
-        body: { phone_number, amount, description },
+        body: { receiver_phone, amount, description },
     });
 });
 
@@ -120,27 +113,15 @@ const walletSlice = createSlice({
                 state.status = "failed";
                 state.error = action.payload || action.error.message || "Deposit failed";
             })
-            .addCase(transferToBeneficiaryWallet.pending, (state) => {
+            .addCase(transferFunds.pending, (state) => {
                 state.status = "loading";
                 state.error = null;
             })
-            .addCase(transferToBeneficiaryWallet.fulfilled, (state, action) => {
+            .addCase(transferFunds.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                state.success = "Transfer to beneficiary wallet successful.";
+                state.success = action.payload?.message || "Transfer successful.";
             })
-            .addCase(transferToBeneficiaryWallet.rejected, (state, action) => {
-                state.status = "failed";
-                state.error = action.error.message;
-            })
-            .addCase(transferToPhone.pending, (state) => {
-                state.status = "loading";
-                state.error = null;
-            })
-            .addCase(transferToPhone.fulfilled, (state, action) => {
-                state.status = "succeeded";
-                state.success = action.payload?.message || "Transfer to phone successful.";
-            })
-            .addCase(transferToPhone.rejected, (state, action) => {
+            .addCase(transferFunds.rejected, (state, action) => {
                 state.status = "failed";
                 state.error = action.error.message;
             })
