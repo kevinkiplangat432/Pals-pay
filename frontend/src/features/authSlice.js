@@ -96,8 +96,6 @@ const authSlice = createSlice({
     user: JSON.parse(localStorage.getItem("user")) || null,
     status: "idle",
     error: null,
-    otpRequired: false,
-    otpUserId: null,
   },
   reducers: {
     clearAuthError: (state) => {
@@ -117,14 +115,7 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.status = "succeeded";
-        if (action.payload.requires_otp) {
-          state.otpRequired = true;
-          state.otpUserId = action.payload.user_id;
-        } else {
-          state.user = action.payload.user;
-          state.otpRequired = false;
-          state.otpUserId = null;
-        }
+        state.user = action.payload.user;
       })
       .addCase(login.rejected, (state, action) => {
         state.status = "failed";
@@ -145,32 +136,9 @@ const authSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Verify OTP
-      .addCase(verifyLoginOTP.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(verifyLoginOTP.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.user = action.payload.user;
-        state.otpRequired = false;
-        state.otpUserId = null;
-      })
-      .addCase(verifyLoginOTP.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload || "Invalid OTP code. Please try again.";
-      })
-
-      // Fetch Profile
-      .addCase(fetchUserProfile.fulfilled, (state, action) => {
-        state.user = action.payload;
-      })
-
       // Logout
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
-        state.otpRequired = false;
-        state.otpUserId = null;
       });
   },
 });

@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { login, verifyLoginOTP, clearAuthError } from "../features/authSlice";
+import { login, clearAuthError } from "../features/authSlice";
 import PageWithRepeatingLogo from "../components/common/PageWithRepeatingLogo";
 
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { user, status, error, otpRequired, otpUserId } = useSelector(
+  const { user, status, error } = useSelector(
     (state) => state.auth
   );
-  const [isOtpStage, setIsOtpStage] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    otp: "",
   });
 
   useEffect(() => {
@@ -23,12 +21,6 @@ export default function Login() {
       navigate(user.is_admin ? "/admin/dashboard" : "/dashboard", { replace: true });
     }
   }, [user, navigate]);
-
-  useEffect(() => {
-    if (otpRequired) {
-      setIsOtpStage(true);
-    }
-  }, [otpRequired]);
 
   const handleChange = (e) => {
     dispatch(clearAuthError());
@@ -41,24 +33,14 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    if (isOtpStage) {
-      const result = await dispatch(
-        verifyLoginOTP({
-          user_id: otpUserId,
-          otp_code: formData.otp,
-        })
-      );
-
-      if (verifyLoginOTP.fulfilled.match(result)) {
-        const userData = result.payload?.user;
-        navigate(userData?.is_admin ? "/admin/dashboard" : "/dashboard", { replace: true });
-      }
-    } else {
-      await dispatch(login({
-        email: formData.email,
-        password: formData.password,
-      }));
+    const result = await dispatch(login({
+      email: formData.email,
+      password: formData.password,
+    }));
+    
+    if (login.fulfilled.match(result)) {
+      const userData = result.payload?.user;
+      navigate(userData?.is_admin ? "/admin/dashboard" : "/dashboard", { replace: true });
     }
   };
 
@@ -72,7 +54,7 @@ export default function Login() {
           </h1>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          {isOtpStage ? "Enter OTP Code" : "Sign in to your account"}
+          Sign in to your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Or{" "}
@@ -91,77 +73,51 @@ export default function Login() {
           )}
 
           <form className="space-y-6" onSubmit={handleLogin}>
-            {!isOtpStage ? (
-              <>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                    Email address
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                    Password
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      id="password"
-                      name="password"
-                      type="password"
-                      autoComplete="current-password"
-                      required
-                      value={formData.password}
-                      onChange={handleChange}
-                      className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
-                      placeholder="Enter your password"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="text-sm">
-                    <Link to="/forgot-password" className="font-medium text-green-600 hover:text-green-500">
-                      Forgot your password?
-                    </Link>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div>
-                <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
-                  OTP Code
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="otp"
-                    name="otp"
-                    type="text"
-                    required
-                    value={formData.otp}
-                    onChange={handleChange}
-                    className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
-                    placeholder="Enter 6-digit OTP"
-                    maxLength={6}
-                  />
-                </div>
-                <p className="mt-2 text-sm text-gray-500">
-                  Check your email or phone for the OTP code
-                </p>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email address
+              </label>
+              <div className="mt-1">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                  placeholder="Enter your email"
+                />
               </div>
-            )}
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <div className="mt-1">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                  placeholder="Enter your password"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                <Link to="/forgot-password" className="font-medium text-green-600 hover:text-green-500">
+                  Forgot your password?
+                </Link>
+              </div>
+            </div>
 
             <div>
               <button
@@ -186,8 +142,6 @@ export default function Login() {
                     </svg>
                     Processing...
                   </span>
-                ) : isOtpStage ? (
-                  "Verify OTP"
                 ) : (
                   "Sign in"
                 )}
