@@ -25,6 +25,21 @@ export const fetchAllTransactions = async (params = {}) => {
   return response.data;
 };
 
+export const fetchPendingTransactions = async (params = {}) => {
+  const response = await api.get("/admin/transactions/pending", { params });
+  return response.data;
+};
+
+export const approveTransaction = async (txId) => {
+  const response = await api.post(`/admin/transactions/${txId}/approve`);
+  return response.data;
+};
+
+export const rejectTransaction = async (txId, reason) => {
+  const response = await api.post(`/admin/transactions/${txId}/reject`, { reason });
+  return response.data;
+};
+
 export const reverseTransaction = async (txId, otpCode) => {
   const response = await api.post(
     `/admin/transactions/${txId}/reverse`,

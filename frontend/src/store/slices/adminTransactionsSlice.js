@@ -1,11 +1,47 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchAllTransactions, reverseTransaction } from '../../services/adminApi';
+import { fetchAllTransactions, fetchPendingTransactions, approveTransaction, rejectTransaction, reverseTransaction } from '../../services/adminApi';
 
 export const loadTransactions = createAsyncThunk(
   'adminTransactions/loadTransactions',
   async (params, { rejectWithValue }) => {
     try {
       const data = await fetchAllTransactions(params);
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: error.message });
+    }
+  }
+);
+
+export const loadPendingTransactions = createAsyncThunk(
+  'adminTransactions/loadPendingTransactions',
+  async (params, { rejectWithValue }) => {
+    try {
+      const data = await fetchPendingTransactions(params);
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: error.message });
+    }
+  }
+);
+
+export const approveTransactionAction = createAsyncThunk(
+  'adminTransactions/approveTransaction',
+  async (txId, { rejectWithValue }) => {
+    try {
+      const data = await approveTransaction(txId);
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: error.message });
+    }
+  }
+);
+
+export const rejectTransactionAction = createAsyncThunk(
+  'adminTransactions/rejectTransaction',
+  async ({ txId, reason }, { rejectWithValue }) => {
+    try {
+      const data = await rejectTransaction(txId, reason);
       return data;
     } catch (error) {
       return rejectWithValue(error.response?.data || { message: error.message });
@@ -69,6 +105,41 @@ const adminTransactionsSlice = createSlice({
       .addCase(loadTransactions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Failed to load transactions';
+      })
+      .addCase(loadPendingTransactions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loadPendingTransactions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.transactions = action.payload.transactions;
+        state.total = action.payload.total;
+        state.pages = action.payload.pages;
+        state.currentPage = action.payload.current_page;
+      })
+      .addCase(loadPendingTransactions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Failed to load pending transactions';
+      })
+      .addCase(approveTransactionAction.fulfilled, (state, action) => {
+        const approvedTx = action.payload.transaction;
+        const index = state.transactions.findIndex((tx) => tx.id === approvedTx.id);
+        if (index !== -1) {
+          state.transactions[index] = approvedTx;
+        }
+      })
+      .addCase(approveTransactionAction.rejected, (state, action) => {
+        state.error = action.payload?.message || 'Failed to approve transaction';
+      })
+      .addCase(rejectTransactionAction.fulfilled, (state, action) => {
+        const rejectedTx = action.payload.transaction;
+        const index = state.transactions.findIndex((tx) => tx.id === rejectedTx.id);
+        if (index !== -1) {
+          state.transactions[index] = rejectedTx;
+        }
+      })
+      .addCase(rejectTransactionAction.rejected, (state, action) => {
+        state.error = action.payload?.message || 'Failed to reject transaction';
       })
       .addCase(reverseTransactionAction.fulfilled, (state, action) => {
         const reversedTx = action.payload.original_transaction;

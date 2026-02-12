@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import EmptyState from "../../components/common/EmptyState";
-import { loadTransactions, setFilters } from "../../store/slices/adminTransactionsSlice";
+import { loadTransactions, loadPendingTransactions, approveTransactionAction, rejectTransactionAction, setFilters } from "../../store/slices/adminTransactionsSlice";
 
 const AdminTransactions = () => {
   const dispatch = useDispatch();
@@ -13,13 +13,46 @@ const AdminTransactions = () => {
 
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [showPendingOnly, setShowPendingOnly] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [showRejectModal, setShowRejectModal] = useState(null);
 
   useEffect(() => {
-    dispatch(loadTransactions(filters));
-  }, [dispatch, filters]);
+    if (showPendingOnly) {
+      dispatch(loadPendingTransactions(filters));
+    } else {
+      dispatch(loadTransactions(filters));
+    }
+  }, [dispatch, filters, showPendingOnly]);
 
   const handlePageChange = (page) => {
     dispatch(setFilters({ page }));
+  };
+
+  const handleApprove = async (txId) => {
+    if (window.confirm('Are you sure you want to approve this transaction?')) {
+      await dispatch(approveTransactionAction(txId));
+      if (showPendingOnly) {
+        dispatch(loadPendingTransactions(filters));
+      } else {
+        dispatch(loadTransactions(filters));
+      }
+    }
+  };
+
+  const handleReject = async (txId) => {
+    if (!rejectReason.trim()) {
+      alert('Please provide a rejection reason');
+      return;
+    }
+    await dispatch(rejectTransactionAction({ txId, reason: rejectReason }));
+    setShowRejectModal(null);
+    setRejectReason("");
+    if (showPendingOnly) {
+      dispatch(loadPendingTransactions(filters));
+    } else {
+      dispatch(loadTransactions(filters));
+    }
   };
 
   const formatCurrency = (amount, currency = "KES") => {
@@ -45,6 +78,16 @@ const AdminTransactions = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Transaction Management</h1>
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => setShowPendingOnly(!showPendingOnly)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${
+              showPendingOnly
+                ? "bg-yellow-600 text-white"
+                : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            {showPendingOnly ? "Show All" : "Pending Only"}
+          </button>
           <span className="text-sm text-gray-600">{total} transactions</span>
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -227,8 +270,24 @@ const AdminTransactions = () => {
                         onClick={() => setSelectedTransaction(tx)}
                         className="text-green-600 hover:text-green-900 mr-3"
                       >
-                        View Details
+                        View
                       </button>
+                      {tx.status === "pending" && (
+                        <>
+                          <button 
+                            onClick={() => handleApprove(tx.id)}
+                            className="text-blue-600 hover:text-blue-900 mr-3"
+                          >
+                            Approve
+                          </button>
+                          <button 
+                            onClick={() => setShowRejectModal(tx.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
                       {tx.status === "completed" && (
                         <button className="text-red-600 hover:text-red-900">
                           Reverse
@@ -293,6 +352,39 @@ const AdminTransactions = () => {
                 <div><span className="font-semibold">Status:</span> <span className={`px-2 py-1 rounded text-xs ${selectedTransaction.status === 'completed' ? 'bg-green-100 text-green-800' : selectedTransaction.status === 'failed' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>{selectedTransaction.status}</span></div>
                 <div><span className="font-semibold">Date:</span> {formatDate(selectedTransaction.created_at)}</div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowRejectModal(null)}>
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Reject Transaction</h2>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Enter rejection reason..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:ring-2 focus:ring-red-500"
+              rows="4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleReject(showRejectModal)}
+                className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+              >
+                Reject
+              </button>
+              <button
+                onClick={() => {
+                  setShowRejectModal(null);
+                  setRejectReason("");
+                }}
+                className="flex-1 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>

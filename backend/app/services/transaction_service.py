@@ -334,43 +334,39 @@ class TransactionService:
         end_date = datetime.utcnow()
         start_date = end_date - timedelta(days=days)
         
-        # Get sent transactions
-        sent_query = Transaction.query.filter(
-            Transaction.sender_wallet_id == user_wallet.id,
+        # Count by status
+        completed = Transaction.query.filter(
+            (Transaction.sender_wallet_id == user_wallet.id) |
+            (Transaction.receiver_wallet_id == user_wallet.id),
             Transaction.status == TransactionStatus.completed,
             Transaction.created_at >= start_date
-        )
+        ).count()
         
-        # Get received transactions
-        received_query = Transaction.query.filter(
-            Transaction.receiver_wallet_id == user_wallet.id,
-            Transaction.status == TransactionStatus.completed,
+        pending = Transaction.query.filter(
+            (Transaction.sender_wallet_id == user_wallet.id) |
+            (Transaction.receiver_wallet_id == user_wallet.id),
+            Transaction.status == TransactionStatus.pending,
             Transaction.created_at >= start_date
-        )
+        ).count()
         
-        total_sent = db.session.query(func.sum(Transaction.amount)).filter(
-            Transaction.sender_wallet_id == user_wallet.id,
-            Transaction.status == TransactionStatus.completed,
+        failed = Transaction.query.filter(
+            (Transaction.sender_wallet_id == user_wallet.id) |
+            (Transaction.receiver_wallet_id == user_wallet.id),
+            Transaction.status == TransactionStatus.failed,
             Transaction.created_at >= start_date
-        ).scalar() or Decimal('0.00')
+        ).count()
         
-        total_received = db.session.query(func.sum(Transaction.amount)).filter(
-            Transaction.receiver_wallet_id == user_wallet.id,
-            Transaction.status == TransactionStatus.completed,
-            Transaction.created_at >= start_date
-        ).scalar() or Decimal('0.00')
-        
-        total_fees = db.session.query(func.sum(Transaction.fee)).filter(
-            Transaction.sender_wallet_id == user_wallet.id,
+        # Total amount (completed only)
+        total_amount = db.session.query(func.sum(Transaction.amount)).filter(
+            (Transaction.sender_wallet_id == user_wallet.id) |
+            (Transaction.receiver_wallet_id == user_wallet.id),
             Transaction.status == TransactionStatus.completed,
             Transaction.created_at >= start_date
         ).scalar() or Decimal('0.00')
         
         return {
-            'sent_count': sent_query.count(),
-            'received_count': received_query.count(),
-            'total_sent': float(total_sent),
-            'total_received': float(total_received),
-            'total_fees': float(total_fees),
-            'period_days': days
+            'completed': completed,
+            'pending': pending,
+            'failed': failed,
+            'total_amount': float(total_amount)
         }

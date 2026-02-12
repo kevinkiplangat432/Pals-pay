@@ -35,87 +35,47 @@ class WalletService:
         if not wallet:
             return {}
         
-        # Today's date
-        today = datetime.utcnow().date()
-        
-        # Today's transactions
-        today_start = datetime.combine(today, datetime.min.time())
-        today_transactions = Transaction.query.filter(
-            (Transaction.sender_wallet_id == wallet.id) |
-            (Transaction.receiver_wallet_id == wallet.id),
-            Transaction.status == TransactionStatus.completed,
-            Transaction.created_at >= today_start
-        ).all()
-        
-        today_sent = sum([tx.amount for tx in today_transactions if tx.sender_wallet_id == wallet.id], Decimal('0.00'))
-        today_received = sum([tx.amount for tx in today_transactions if tx.receiver_wallet_id == wallet.id], Decimal('0.00'))
-        
-        # Monthly transactions
-        month_start = datetime(today.year, today.month, 1)
-        monthly_transactions = Transaction.query.filter(
-            (Transaction.sender_wallet_id == wallet.id) |
-            (Transaction.receiver_wallet_id == wallet.id),
-            Transaction.status == TransactionStatus.completed,
-            Transaction.created_at >= month_start
-        ).all()
-        
-        monthly_sent = sum([tx.amount for tx in monthly_transactions if tx.sender_wallet_id == wallet.id], Decimal('0.00'))
-        monthly_received = sum([tx.amount for tx in monthly_transactions if tx.receiver_wallet_id == wallet.id], Decimal('0.00'))
-        
-        # Transaction count by type
-        sent_count = Transaction.query.filter(
-            Transaction.sender_wallet_id == wallet.id,
-            Transaction.status == TransactionStatus.completed
-        ).count()
-        
-        received_count = Transaction.query.filter(
-            Transaction.receiver_wallet_id == wallet.id,
-            Transaction.status == TransactionStatus.completed
-        ).count()
-        
-        # Top beneficiaries (last 30 days)
+        # Last 30 days
         thirty_days_ago = datetime.utcnow() - timedelta(days=30)
         
-        from app.models import Beneficiary
-        top_beneficiaries = db.session.query(
-            Beneficiary,
-            func.count(Transaction.id).label('count'),
-            func.sum(Transaction.amount).label('total')
-        ).join(
-            Transaction,
-            (Transaction.receiver_wallet_id == Beneficiary.beneficiary_wallet_id) &
-            (Transaction.sender_wallet_id == wallet.id)
-        ).filter(
+        # Get deposits
+        deposits = Transaction.query.filter(
+            Transaction.receiver_wallet_id == wallet.id,
+            Transaction.transaction_type == TransactionType.deposit,
             Transaction.status == TransactionStatus.completed,
-            Transaction.created_at >= thirty_days_ago,
-            Beneficiary.user_id == user_id
-        ).group_by(Beneficiary.id).order_by(func.sum(Transaction.amount).desc()).limit(5).all()
+            Transaction.created_at >= thirty_days_ago
+        ).all()
+        total_deposits = sum([tx.amount for tx in deposits], Decimal('0.00'))
         
-        analytics = {
-            'wallet_summary': wallet.to_dict(),
-            'today': {
-                'sent': float(today_sent),
-                'received': float(today_received),
-                'count': len(today_transactions)
-            },
-            'this_month': {
-                'sent': float(monthly_sent),
-                'received': float(monthly_received),
-                'count': len(monthly_transactions)
-            },
-            'overall': {
-                'sent_count': sent_count,
-                'received_count': received_count,
-                'total_transactions': sent_count + received_count
-            },
-            'top_beneficiaries': [
-                {
-                    'beneficiary': beneficiary.to_dict(include_user=True),
-                    'transaction_count': count,
-                    'total_amount': float(total)
-                }
-                for beneficiary, count, total in top_beneficiaries
-            ] if top_beneficiaries else []
+        # Get withdrawals
+        withdrawals = Transaction.query.filter(
+            Transaction.sender_wallet_id == wallet.id,
+            Transaction.transaction_type == TransactionType.withdrawal,
+            Transaction.status == TransactionStatus.completed,
+            Transaction.created_at >= thirty_days_ago
+        ).all()
+        total_withdrawals = sum([tx.amount for tx in withdrawals], Decimal('0.00'))
+        
+        # Get transfers (sent)
+        transfers = Transaction.query.filter(
+            Transaction.sender_wallet_id == wallet.id,
+            Transaction.transaction_type == TransactionType.transfer,
+            Transaction.status == TransactionStatus.completed,
+            Transaction.created_at >= thirty_days_ago
+        ).all()
+        total_transfers = sum([tx.amount for tx in transfers], Decimal('0.00'))
+        
+        # Total transaction count
+        transaction_count = Transaction.query.filter(
+            (Transaction.sender_wallet_id == wallet.id) |
+            (Transaction.receiver_wallet_id == wallet.id),
+            Transaction.status == TransactionStatus.completed,
+            Transaction.created_at >= thirty_days_ago
+        ).count()
+        
+        return {
+            'total_deposits': float(total_deposits),
+            'total_withdrawals': float(total_withdrawals),
+            'total_transfers': float(total_transfers),
+            'transaction_count': transaction_count
         }
-        
-        return analytics
