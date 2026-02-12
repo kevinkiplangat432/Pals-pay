@@ -83,21 +83,6 @@ def register():
         
         db.session.add(user_account)
         
-        otp = OTPService.generate_otp(user.id, 'email_verification')
-        
-        notification_preferences = {
-            'email': data.get('notify_email', True),
-            'sms': data.get('notify_sms', True),
-            'whatsapp': data.get('notify_whatsapp', False)
-        }
-        
-        NotificationService.send_verification_otp(
-            user_id=user.id,
-            otp=otp,
-            channel='email',
-            preferences=notification_preferences
-        )
-        
         db.session.commit()
         
         access_token = create_access_token(  # The access token is created with the user's ID as the identity and additional claims that include the user's admin status, KYC status, and account ID. This allows the frontend to easily access this information from the token without needing to make additional API calls to get the user's details. The token can be used for authenticated requests to protected endpoints in the API.
@@ -122,11 +107,10 @@ def register():
         )
         
         return jsonify({
-            'message': 'Registration successful. Please verify your email.',
+            'message': 'Registration successful.',
             'user': user.to_dict(include_accounts=True),
             'access_token': access_token,
-            'refresh_token': refresh_token,
-            'requires_verification': True
+            'refresh_token': refresh_token
         }), 201
         
     except Exception as e:
@@ -292,8 +276,8 @@ def logout():
 def verify_email():
     data = request.get_json()
     
-    if not data or 'email' not in data or 'otp' not in data:
-        return jsonify({'message': 'Missing email or OTP'}), 400
+    if not data or 'email' not in data:
+        return jsonify({'message': 'Missing email'}), 400
     
     user = User.query.filter_by(email=data['email']).first()
     if not user:
@@ -302,16 +286,7 @@ def verify_email():
     if user.is_verified:
         return jsonify({'message': 'Email already verified'}), 200
     
-    if not OTPService.verify_otp(user.id, 'email_verification', data['otp']):
-        return jsonify({'message': 'Invalid or expired OTP'}), 400
-    
     user.is_verified = True
-    
-    NotificationService.send_welcome_notification(
-        user_id=user.id,
-        channel='email'
-    )
-    
     db.session.commit()
     
     AuditLog.log_user_action(
@@ -329,15 +304,7 @@ def verify_email():
 @auth_bp.route('/verify-phone', methods=['POST'])
 @token_required
 def verify_phone():
-    data = request.get_json()
-    
-    if not data or 'otp' not in data:
-        return jsonify({'message': 'Missing OTP'}), 400
-    
     user = request.current_user
-    
-    if not OTPService.verify_otp(user.id, 'phone_verification', data['otp']):
-        return jsonify({'message': 'Invalid or expired OTP'}), 400
     
     AuditLog.log_user_action(
         actor_id=user.id,
@@ -353,85 +320,11 @@ def verify_phone():
 
 @auth_bp.route('/forgot-password', methods=['POST'])
 def forgot_password():
-    data = request.get_json()
-    
-    if not data or ('email' not in data and 'phone_number' not in data):
-        return jsonify({'message': 'Missing email or phone number'}), 400
-    
-    if 'email' in data:
-        user = User.query.filter_by(email=data['email']).first()
-    else:
-        user = User.query.filter_by(phone_number=data['phone_number']).first()
-    
-    if not user:
-        return jsonify({
-            'message': 'If your account exists, you will receive a reset code'
-        }), 200
-    
-    otp = OTPService.generate_otp(user.id, 'password_reset')
-    
-    if 'email' in data:
-        NotificationService.send_password_reset_otp(
-            user_id=user.id,
-            otp=otp,
-            channel='email'
-        )
-    else:
-        NotificationService.send_password_reset_otp(
-            user_id=user.id,
-            otp=otp,
-            channel='sms'
-        )
-    
-    AuditLog.log_user_action(
-        actor_id=user.id,
-        action='password_reset_requested',
-        resource_type='user',
-        resource_id=user.id,
-        actor_ip=request.remote_addr
-    )
-    
-    return jsonify({
-        'message': 'Reset code sent successfully',
-        'method': 'email' if 'email' in data else 'sms'
-    }), 200
+    return jsonify({'message': 'Password reset temporarily disabled'}), 503
 
 @auth_bp.route('/reset-password', methods=['POST'])
 def reset_password():
-    data = request.get_json()
-    
-    required_fields = ['email', 'otp', 'new_password']
-    for field in required_fields:
-        if field not in data:
-            return jsonify({'message': f'Missing required field: {field}'}), 400
-    
-    user = User.query.filter_by(email=data['email']).first()
-    if not user:
-        return jsonify({'message': 'User not found'}), 404
-    
-    if not OTPService.verify_otp(user.id, 'password_reset', data['otp']):
-        return jsonify({'message': 'Invalid or expired OTP'}), 400
-    
-    if len(data['new_password']) < 8:
-        return jsonify({'message': 'Password must be at least 8 characters'}), 400
-    
-    user.set_password(data['new_password'])
-    
-    NotificationService.send_password_changed_notification(
-        user_id=user.id,
-        channel='email'
-    )
-    
-    db.session.commit()
-    
-    AuditLog.log_user_action(
-        actor_id=user.id,
-        action='password_reset',
-        resource_type='user',
-        resource_id=user.id
-    )
-    
-    return jsonify({'message': 'Password reset successfully'}), 200
+    return jsonify({'message': 'Password reset temporarily disabled'}), 503
 
 @auth_bp.route('/countries', methods=['GET'])
 def get_supported_countries():
