@@ -386,38 +386,38 @@ def approve_transaction(current_user, tx_id):
         return jsonify({'message': 'Only pending transactions can be approved'}), 400
     
     try:
-        with db.session.begin_nested():
-            # Update transaction status
-            transaction.update_status(TransactionStatus.completed)
+        # Update transaction status
+        transaction.status = TransactionStatus.completed
+        
+        # Credit receiver wallet if deposit
+        from app.models.enums import TransactionType
+        if transaction.transaction_type == TransactionType.deposit and transaction.receiver_wallet:
+            wallet = transaction.receiver_wallet
+            wallet.balance += transaction.net_amount
+            wallet.available_balance += transaction.net_amount
             
-            # Credit receiver wallet if deposit
-            if transaction.transaction_type.value == 'deposit' and transaction.receiver_wallet:
-                wallet = transaction.receiver_wallet
-                wallet.balance += transaction.net_amount
-                wallet.available_balance += transaction.net_amount
-                
-                # Create ledger entry
-                from app.models import LedgerEntry
-                ledger_entry = LedgerEntry(
-                    wallet_id=wallet.id,
-                    transaction_id=transaction.id,
-                    amount=transaction.net_amount,
-                    balance_before=wallet.balance - transaction.net_amount,
-                    balance_after=wallet.balance,
-                    entry_type='credit',
-                    description=f"Admin approved deposit"
-                )
-                db.session.add(ledger_entry)
-            
-            # Log the action
-            AuditLog.log_admin_action(
-                actor_id=current_user.id,
-                action='transaction.approve',
-                resource_type='transaction',
-                resource_id=transaction.id,
-                new_values={'status': 'completed'},
-                status='success'
+            # Create ledger entry
+            from app.models import LedgerEntry
+            ledger_entry = LedgerEntry(
+                wallet_id=wallet.id,
+                transaction_id=transaction.id,
+                amount=transaction.net_amount,
+                balance_before=wallet.balance - transaction.net_amount,
+                balance_after=wallet.balance,
+                entry_type='credit',
+                description=f"Admin approved deposit"
             )
+            db.session.add(ledger_entry)
+        
+        # Log the action
+        AuditLog.log_admin_action(
+            actor_id=current_user.id,
+            action='transaction.approve',
+            resource_type='transaction',
+            resource_id=transaction.id,
+            new_values={'status': 'completed'},
+            status='success'
+        )
         
         db.session.commit()
         
@@ -428,6 +428,8 @@ def approve_transaction(current_user, tx_id):
         
     except Exception as e:
         db.session.rollback()
+        import traceback
+        traceback.print_exc()
         return jsonify({'message': f'Failed to approve transaction: {str(e)}'}), 500
 
 # Reject transaction
@@ -444,7 +446,7 @@ def reject_transaction(current_user, tx_id):
     
     try:
         # Update transaction status
-        transaction.update_status(TransactionStatus.failed)
+        transaction.status = TransactionStatus.failed
         if transaction.metadata:
             transaction.metadata['rejection_reason'] = reason
         else:
@@ -469,6 +471,8 @@ def reject_transaction(current_user, tx_id):
         
     except Exception as e:
         db.session.rollback()
+        import traceback
+        traceback.print_exc()
         return jsonify({'message': f'Failed to reject transaction: {str(e)}'}), 500
 
 # Get audit logs
