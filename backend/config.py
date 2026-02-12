@@ -297,14 +297,13 @@ class ProductionConfig(Config):
     DEBUG = False
     TESTING = False
     
-    # Override with production-specific settings
-    @property
-    def SQLALCHEMY_DATABASE_URI(self):
-        # Render provides DATABASE_URL, but SQLAlchemy needs postgresql://
-        uri = os.environ.get('DATABASE_URL', '')
-        if uri.startswith('postgres://'):
+    # Override SQLALCHEMY_DATABASE_URI to handle Render's postgres:// format
+    def __init__(self):
+        super().__init__()
+        uri = os.environ.get('DATABASE_URL', self.SQLALCHEMY_DATABASE_URI)
+        if uri and uri.startswith('postgres://'):
             uri = uri.replace('postgres://', 'postgresql://', 1)
-        return uri
+        self.SQLALCHEMY_DATABASE_URI = uri
     
 config = {
     'development': DevelopmentConfig,
