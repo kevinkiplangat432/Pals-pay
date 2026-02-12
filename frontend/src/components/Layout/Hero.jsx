@@ -32,12 +32,17 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Right Column: Video */}
-        <div className="rounded-xl overflow-hidden shadow-lg aspect-video max-h-[450px] md:max-h-[500px]">
+        {/* Right Column: Logo Display */}
+        <div className="rounded-xl overflow-hidden aspect-video max-h-[450px] md:max-h-[500px] bg-white flex items-center justify-center">
+          <img src="/palslogo.png" alt="PalsPay" className="w-3/4 h-auto object-contain" />
+        </div>
+
+        {/* Right Column: Video (Commented Out) */}
+        {/* <div className="rounded-xl overflow-hidden shadow-lg aspect-video max-h-[450px] md:max-h-[500px]">
           <video controls className="w-full h-full object-cover">
             <source src="/promo-video.mp4" type="video/mp4" />
           </video>
-        </div>
+        </div> */}
       </div>
     </section>
   );

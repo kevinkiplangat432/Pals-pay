@@ -5,6 +5,7 @@ import {
   fetchKycStatus,
   submitKycDocuments,
 } from "../features/profileSlice";
+import PageWithLogo from "../components/common/PageWithLogo";
 
 export default function KycPage() {
   const dispatch = useDispatch();
@@ -39,6 +40,7 @@ export default function KycPage() {
   }
 
   return (
+    <PageWithLogo>
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-900">KYC Verification</h1>
@@ -175,5 +177,6 @@ export default function KycPage() {
         </div>
       </div>
     </div>
+    </PageWithLogo>
   );
 }

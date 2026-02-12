@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearUserMessages, fetchUserProfile, updateUserProfile} from '../features/profileSlice';
+import PageWithLogo from '../components/common/PageWithLogo';
 
 export default function UserProfilePage() {
     const dispatch = useDispatch();
@@ -43,6 +44,7 @@ export default function UserProfilePage() {
     }
 
     return (
+        <PageWithLogo>
         <div className="mx-auto max-w-6xl px-4 py-6">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-slate-900">User Profile</h1>
@@ -131,6 +133,7 @@ export default function UserProfilePage() {
                 </div>
             </div>
         </div>
+        </PageWithLogo>
 
     );
 }

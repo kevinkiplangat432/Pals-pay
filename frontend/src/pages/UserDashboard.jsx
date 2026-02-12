@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchWalletSummary } from '../features/walletSlice';
 import { fetchTransactions } from '../features/transactionsSlice';
 import { Link } from 'react-router-dom';
+import PageWithLogo from '../components/common/PageWithLogo';
 
 const UserDashboard = () => {
   const dispatch = useDispatch();
@@ -22,6 +23,7 @@ const UserDashboard = () => {
   const currency = summary?.currency || 'KES';
 
   return (
+    <PageWithLogo>
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard Overview</h1>
 
@@ -99,6 +101,7 @@ const UserDashboard = () => {
         )}
       </div>
     </div>
+    </PageWithLogo>
   );
 };
 

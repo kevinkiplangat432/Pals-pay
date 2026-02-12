@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { login, verifyLoginOTP, clearAuthError } from "../features/authSlice";
+import PageWithRepeatingLogo from "../components/common/PageWithRepeatingLogo";
 
 export default function Login() {
   const dispatch = useDispatch();
@@ -62,6 +63,7 @@ export default function Login() {
   };
 
   return (
+    <PageWithRepeatingLogo>
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
@@ -208,5 +210,6 @@ export default function Login() {
         </div>
       </div>
     </div>
+    </PageWithRepeatingLogo>
   );
 }
