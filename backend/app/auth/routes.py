@@ -159,22 +159,6 @@ def login():
     ip_address = request.remote_addr
     user_agent = request.user_agent.string
     
-    if OTPService.is_login_otp_required(user, ip_address):
-        otp = OTPService.generate_otp(user.id, 'login')
-        NotificationService.send_login_otp(
-            user_id=user.id,
-            otp=otp,
-            ip_address=ip_address
-        )
-        
-        db.session.commit()
-        
-        return jsonify({
-            'requires_otp': True,
-            'message': 'Login OTP sent',
-            'user_id': user.id
-        }), 200
-    
     access_token = create_access_token(
         identity=str(user.id),
         additional_claims={
