@@ -216,5 +216,12 @@ class OTPService:
     
     @staticmethod
     def is_login_otp_required(user, ip_address):
-        # Always require OTP for login via email
+        # Check if OTP is enabled in config
+        otp_required = current_app.config.get('OTP_CONFIG', {}).get('login_otp_required', False)
+        
+        # If disabled globally, skip OTP
+        if not otp_required:
+            return False
+        
+        # Otherwise require OTP for login
         return True
