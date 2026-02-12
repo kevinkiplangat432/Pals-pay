@@ -204,7 +204,6 @@ def submit_kyc(current_user):
 # Get payment methods
 @user_bp.route('/payment-methods', methods=['GET'])
 @token_required
-@kyc_required
 def get_payment_methods(current_user):
     user = current_user
     
@@ -220,7 +219,6 @@ def get_payment_methods(current_user):
 # Add payment method
 @user_bp.route('/payment-methods', methods=['POST'])
 @token_required
-@kyc_required
 def add_payment_method(current_user):
     user = current_user
     data = request.get_json()
