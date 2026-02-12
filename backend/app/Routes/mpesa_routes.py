@@ -21,9 +21,9 @@ def stk_callback():
         result_code = body.get('ResultCode')
         checkout_request_id = body.get('CheckoutRequestID')
         
-        # Find transaction by checkout_request_id stored in meta_data
+        # Find transaction by checkout_request_id stored in metadata
         transaction = Transaction.query.filter(
-            Transaction.meta_data['checkout_request_id'].astext == checkout_request_id
+            Transaction.metadata['checkout_request_id'].astext == checkout_request_id
         ).first()
         
         if not transaction:
@@ -45,11 +45,11 @@ def stk_callback():
             # Update transaction
             transaction.status = TransactionStatus.completed
             transaction.external_reference = mpesa_receipt
-            if transaction.meta_data:
-                transaction.meta_data['mpesa_receipt'] = mpesa_receipt
-                transaction.meta_data['phone_number'] = phone_number
+            if transaction.metadata:
+                transaction.metadata['mpesa_receipt'] = mpesa_receipt
+                transaction.metadata['phone_number'] = phone_number
             else:
-                transaction.meta_data = {
+                transaction.metadata = {
                     'mpesa_receipt': mpesa_receipt,
                     'phone_number': phone_number
                 }
@@ -63,10 +63,10 @@ def stk_callback():
         else:
             # Payment failed
             transaction.status = TransactionStatus.failed
-            if transaction.meta_data:
-                transaction.meta_data['failure_reason'] = body.get('ResultDesc')
+            if transaction.metadata:
+                transaction.metadata['failure_reason'] = body.get('ResultDesc')
             else:
-                transaction.meta_data = {'failure_reason': body.get('ResultDesc')}
+                transaction.metadata = {'failure_reason': body.get('ResultDesc')}
             db.session.commit()
             logger.warning(f"Transaction {transaction.id} failed: {body.get('ResultDesc')}")
         
@@ -90,7 +90,7 @@ def b2c_result():
         
         # Find transaction by conversation_id
         transaction = Transaction.query.filter(
-            Transaction.meta_data['conversation_id'].astext == conversation_id
+            Transaction.metadata['conversation_id'].astext == conversation_id
         ).first()
         
         if not transaction:
@@ -113,10 +113,10 @@ def b2c_result():
         else:
             # Payout failed
             transaction.status = TransactionStatus.failed
-            if transaction.meta_data:
-                transaction.meta_data['failure_reason'] = result.get('ResultDesc')
+            if transaction.metadata:
+                transaction.metadata['failure_reason'] = result.get('ResultDesc')
             else:
-                transaction.meta_data = {'failure_reason': result.get('ResultDesc')}
+                transaction.metadata = {'failure_reason': result.get('ResultDesc')}
             
             # Refund sender wallet
             sender_wallet = transaction.sender_wallet
