@@ -17,8 +17,6 @@ export default function Signup() {
     password: "",
     phone_number: "",
     country_code: "KE",
-    notify_email: true,
-    notify_sms: true,
     accept_terms: false,
   });
 
@@ -208,40 +206,6 @@ export default function Signup() {
                     className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
                     placeholder="712345678"
                   />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-sm font-medium text-gray-700">
-                Notification Preferences
-              </label>
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <input
-                    id="notify_email"
-                    name="notify_email"
-                    type="checkbox"
-                    checked={formData.notify_email}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="notify_email" className="ml-2 block text-sm text-gray-700">
-                    Email notifications
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    id="notify_sms"
-                    name="notify_sms"
-                    type="checkbox"
-                    checked={formData.notify_sms}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="notify_sms" className="ml-2 block text-sm text-gray-700">
-                    SMS notifications
-                  </label>
                 </div>
               </div>
             </div>
