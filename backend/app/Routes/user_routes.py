@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 import re
 from datetime import datetime
 from ..extensions import db
@@ -223,11 +223,14 @@ def add_payment_method(current_user):
     user = current_user
     data = request.get_json()
     
+    current_app.logger.info(f"Add payment method request: {data}")
+    
     provider = data.get('provider')
     account_reference = data.get('account_reference')
     account_name = data.get('account_name')
     
     if not provider or not account_reference:
+        current_app.logger.error(f"Missing fields: provider={provider}, account_reference={account_reference}")
         return jsonify({'message': 'Provider and account reference are required'}), 400
     
     # Validate provider

@@ -55,7 +55,7 @@ A full-stack digital wallet application supporting multi-currency transactions, 
 ### 1. Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/kevinkiplangat432/Pals-pay.git
 cd Pals-pay
 ```
 
@@ -70,12 +70,6 @@ pipenv install
 # Create PostgreSQL database
 createdb pals_db
 createuser palsuser -P  # Password: palspassword
-
-# Copy environment file
-cp .env.example .env
-
-# Update .env with your credentials
-# See Configuration section below
 
 # Run migrations
 pipenv run flask db upgrade
@@ -105,31 +99,6 @@ Frontend runs on: http://localhost:5173
 
 ##  Configuration
 
-### Backend Environment Variables (.env)
-
-```env
-# Database
-DATABASE_URL=postgresql://palsuser:palspassword@localhost/pals_db
-
-# Flask
-SECRET_KEY=your-secret-key
-JWT_SECRET_KEY=your-jwt-secret
-
-# Email (Gmail SMTP)
-EMAIL_ENABLED=true
-EMAIL_SENDER=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-
-# M-Pesa (Sandbox)
-MPESA_CONSUMER_KEY=your-consumer-key
-MPESA_CONSUMER_SECRET=your-consumer-secret
-MPESA_PASSKEY=your-passkey
-MPESA_SHORTCODE=174379
-MPESA_API_URL=https://sandbox.safaricom.co.ke
-MPESA_CALLBACK_URL=https://your-ngrok-url/api/v1/mpesa/callback
-```
 
 ### Frontend Configuration
 
@@ -229,14 +198,6 @@ Pals-pay/
 └── README.md                  # This file
 ```
 
-##  Color Scheme
-
-- Primary: Green (#16a34a, #15803d)
-- Success: Green
-- Warning: Yellow
-- Error: Red
-- Background: White/Gray
-
 ##  Security Features
 
 - JWT-based authentication
@@ -327,6 +288,9 @@ This project is licensed under the MIT License.
 ## Authors
 
 - Kevin Kiplangat - Initial work
+- Sylvia Malala
+- wise mutuku
+- Meri alea
 
 ## Acknowledgments
 
@@ -335,12 +299,6 @@ This project is licensed under the MIT License.
 - All contributors
 
 ## Support
-
-For issues and questions:
-- Check `MPESA_TESTING_GUIDE.md` for M-Pesa issues
-- Review backend logs for errors
-- Check browser console for frontend errors
-
----
+for any issues contact kiplangatkevin335@gmail.com
 
 **Built with ❤️ for seamless digital payments**
