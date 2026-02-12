@@ -96,9 +96,8 @@ def update_user_profile(current_user):
 # Change password
 @user_bp.route('/change-password', methods=['PUT'])
 @token_required
-@otp_required('change_password')
 def change_password(current_user):
-    """Change password with OTP verification"""
+    """Change password"""
     data = request.get_json()
     
     current_password = data.get('current_password')
@@ -266,6 +265,9 @@ def add_payment_method(current_user):
             is_default=True
         ).update({'is_default': False})
     
+    # Auto-verify payment method
+    payment_method.is_verified = True
+    
     try:
         db.session.add(payment_method)
         db.session.commit()
@@ -334,30 +336,6 @@ def set_default_payment_method(current_user, payment_method_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Failed to update default payment method: {str(e)}'}), 500
-
-# Verify payment method (for MPesa - send verification code)
-@user_bp.route('/payment-methods/<int:payment_method_id>/verify', methods=['POST'])
-@token_required
-def verify_payment_method(current_user, payment_method_id):
-    user = current_user
-    
-    payment_method = PaymentMethod.query.filter_by(
-        id=payment_method_id,
-        user_id=user.id
-    ).first_or_404()
-    
-    data = request.get_json()
-    verification_token = data.get('verification_token')
-    
-    if not verification_token:
-        return jsonify({'message': 'Verification token required'}), 400
-    
-    # Verify the token (in real implementation, send SMS and verify)
-    if payment_method.verify(verification_token):
-        db.session.commit()
-        return jsonify({'message': 'Payment method verified successfully'}), 200
-    else:
-        return jsonify({'message': 'Invalid verification token'}), 400
 
 # Get transaction history
 @user_bp.route('/transactions', methods=['GET'])

@@ -4,7 +4,7 @@ from datetime import datetime
 from ..extensions import db
 from app.models import Wallet, Transaction, PaymentMethod
 from app.models.enums import TransactionType, TransactionStatus, PaymentProvider
-from app.auth.decorators import token_required, kyc_required, otp_required
+from app.auth.decorators import token_required
 from app.services.wallet_service import WalletService
 from app.services.transaction_service import TransactionService
 import uuid
@@ -48,7 +48,6 @@ def wallet_analytics(current_user):
 
 @wallet_bp.route('/deposit/mpesa', methods=['POST'])
 @token_required
-@kyc_required
 def deposit_via_mpesa(current_user):
     """Deposit via MPesa"""
     data = request.get_json()
@@ -111,10 +110,8 @@ def mpesa_callback():
 
 @wallet_bp.route('/transfer', methods=['POST'])
 @token_required
-@kyc_required
-@otp_required('transfer', 'amount')
 def transfer_to_beneficiary(current_user):
-    """Transfer to beneficiary with OTP verification"""
+    """Transfer to beneficiary"""
     data = request.get_json()
     
     beneficiary_wallet_id = data.get('beneficiary_wallet_id')
@@ -140,10 +137,8 @@ def transfer_to_beneficiary(current_user):
 
 @wallet_bp.route('/transfer/phone', methods=['POST'])
 @token_required
-@kyc_required
-@otp_required('transfer', 'amount')
 def transfer_to_phone(current_user):
-    """Transfer to phone number with OTP verification"""
+    """Transfer to phone number"""
     data = request.get_json()
     
     phone_number = data.get('phone_number')
@@ -180,10 +175,8 @@ def transfer_to_phone(current_user):
 
 @wallet_bp.route('/withdraw', methods=['POST'])
 @token_required
-@kyc_required
-@otp_required('withdrawal', 'amount')
 def withdraw_funds(current_user):
-    """Withdraw funds with OTP verification"""
+    """Withdraw funds"""
     data = request.get_json()
     
     amount = data.get('amount')
@@ -202,9 +195,11 @@ def withdraw_funds(current_user):
     # Get payment method
     payment_method = PaymentMethod.query.filter_by(
         id=payment_method_id,
-        user_id=current_user.id,
-        is_verified=True
-    ).first_or_404()
+        user_id=current_user.id
+    ).first()
+    
+    if not payment_method:
+        return jsonify({'message': 'Payment method not found'}), 404
     
     # Get wallet
     wallet = Wallet.query.filter_by(user_id=current_user.id).first()

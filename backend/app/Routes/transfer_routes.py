@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from ..extensions import db
 from ..models import Transaction, Wallet, Beneficiary, AuditLog, ExchangeRate
 from ..models.enums import TransactionStatus, TransactionType, PaymentProvider
-from ..auth.decorators import token_required, kyc_required, otp_required
+from ..auth.decorators import token_required
 from ..services.transfer_service import TransferService
 from ..services.currency_service import CurrencyService
 from ..services.compliance_service import ComplianceService
@@ -16,7 +16,6 @@ transfer_bp = Blueprint('transfers', __name__, url_prefix='/api/v1/transfers')
 
 @transfer_bp.route('/local/quote', methods=['POST'])
 @token_required
-@kyc_required
 def get_local_transfer_quote():
     data = request.get_json()
     
@@ -56,8 +55,6 @@ def get_local_transfer_quote():
 
 @transfer_bp.route('/local/initiate', methods=['POST'])
 @token_required
-@kyc_required
-@otp_required('local_transfer', 'amount')
 def initiate_local_transfer():
     data = request.get_json()
     
@@ -104,7 +101,6 @@ def initiate_local_transfer():
 
 @transfer_bp.route('/international/quote', methods=['POST'])
 @token_required
-@kyc_required
 def get_international_transfer_quote():
     data = request.get_json()
     
@@ -142,8 +138,6 @@ def get_international_transfer_quote():
 
 @transfer_bp.route('/international/initiate', methods=['POST'])
 @token_required
-@kyc_required
-@otp_required('international_transfer', 'amount')
 def initiate_international_transfer():
     data = request.get_json()
     
@@ -172,7 +166,6 @@ def initiate_international_transfer():
 
 @transfer_bp.route('/international/compliance', methods=['POST'])
 @token_required
-@kyc_required
 def check_international_compliance():
     data = request.get_json()
     
