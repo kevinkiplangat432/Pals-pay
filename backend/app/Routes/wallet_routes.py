@@ -70,9 +70,9 @@ def deposit_via_mpesa(current_user):
 
     # Initialize payment service
     from app import create_app
-    from app.services.payment_service import DarajaPaymentService
+    from app.services.payment_service import PaymentService
     app = create_app()
-    payment_service = DarajaPaymentService()
+    payment_service = PaymentService()
     payment_service.init_app(app)
     
     # Process deposit
@@ -94,9 +94,9 @@ def mpesa_callback():
     data = request.get_json()
     
     from app import create_app
-    from app.services.payment_service import DarajaPaymentService
+    from app.services.payment_service import PaymentService
     app = create_app()
-    payment_service = DarajaPaymentService()
+    payment_service = PaymentService()
     payment_service.init_app(app)
     
     # Process callback
