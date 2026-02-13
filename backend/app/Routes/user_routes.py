@@ -177,6 +177,11 @@ def submit_kyc(current_user):
     if not document_type or not document_number:
         return jsonify({'message': 'Document type and number are required'}), 400
     
+    # Validate document type
+    valid_types = ['national_id', 'passport', 'driver_license', 'alien_card']
+    if document_type not in valid_types:
+        return jsonify({'message': f'Invalid document type. Must be one of: {", ".join(valid_types)}'}), 400
+    
     # Get files
     front_doc = request.files.get('front_document')
     back_doc = request.files.get('back_document')
