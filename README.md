@@ -2,7 +2,7 @@
 
 A full-stack digital wallet application supporting multi-currency transactions, M-Pesa integration, KYC verification, and comprehensive admin management.
 
-## 🚀 Features
+##  Features
 
 ### User Features
 - **Digital Wallet** - Multi-currency wallet with real-time balance tracking
@@ -21,7 +21,7 @@ A full-stack digital wallet application supporting multi-currency transactions, 
 - **Analytics Dashboard** - System statistics and insights
 - **Audit Logs** - Complete activity tracking
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **React 18** with Vite
@@ -42,7 +42,7 @@ A full-stack digital wallet application supporting multi-currency transactions, 
 - **M-Pesa Daraja API** (Lipa Na M-Pesa, B2C)
 - **Flutterwave** (configured, ready to integrate)
 
-## 📋 Prerequisites
+##  Prerequisites
 
 - Python 3.12+
 - Node.js 18+
@@ -50,7 +50,7 @@ A full-stack digital wallet application supporting multi-currency transactions, 
 - pipenv (Python package manager)
 - npm or yarn
 
-## 🔧 Installation
+## Installation
 
 ### 1. Clone Repository
 
@@ -103,7 +103,7 @@ npm run dev
 
 Frontend runs on: http://localhost:5173
 
-## ⚙️ Configuration
+## Configuration
 
 ### Backend Environment Variables (.env)
 
@@ -138,7 +138,7 @@ Update `frontend/src/utils/api.js` if backend URL changes:
 const API_BASE_URL = 'http://localhost:5000';
 ```
 
-## 🧪 Testing M-Pesa Integration
+## Testing M-Pesa Integration
 
 ### Quick Setup
 
@@ -179,7 +179,7 @@ const API_BASE_URL = 'http://localhost:5000';
 
 See `MPESA_QUICKSTART.md` for detailed guide.
 
-## 👥 User Accounts
+##  User Accounts
 
 ### Create Admin Account
 
@@ -198,7 +198,7 @@ Password: Password123!
 
 10 test users available with verified KYC and 10,000 KES balance.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Pals-pay/
@@ -229,7 +229,7 @@ Pals-pay/
 └── README.md                  # This file
 ```
 
-## 🔑 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/v1/auth/register` - User registration
@@ -262,7 +262,7 @@ Pals-pay/
 - `POST /api/v1/mpesa/b2c/result` - B2C result
 - `POST /api/v1/mpesa/confirmation` - C2B confirmation
 
-## 🎨 Color Scheme
+## Color Scheme
 
 - Primary: Green (#16a34a, #15803d)
 - Success: Green
@@ -270,7 +270,7 @@ Pals-pay/
 - Error: Red
 - Background: White/Gray
 
-## 🔒 Security Features
+## Security Features
 
 - JWT-based authentication
 - OTP verification for login
@@ -280,7 +280,7 @@ Pals-pay/
 - Transaction audit logs
 - CORS protection
 
-## 📊 Database Schema
+## Database Schema
 
 ### Main Tables
 - **users** - User accounts and profiles
@@ -290,7 +290,7 @@ Pals-pay/
 - **payment_methods** - User payment methods
 - **audit_logs** - System activity logs
 
-## 🚀 Deployment
+## Deployment
 
 ### Backend (Production)
 
@@ -309,7 +309,7 @@ Pals-pay/
    ```
 3. Deploy `dist/` folder to hosting service
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Backend won't start
 - Check PostgreSQL is running
@@ -327,7 +327,7 @@ Pals-pay/
 - Check CORS configuration in backend
 - Verify API_BASE_URL in frontend
 
-## 📝 Scripts
+## Scripts
 
 ### Backend
 ```bash
@@ -345,7 +345,7 @@ npm run build                         # Build for production
 npm run preview                       # Preview production build
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/AmazingFeature`)
@@ -353,21 +353,21 @@ npm run preview                       # Preview production build
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Open Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
-## 👨‍💻 Authors
+## Authors
 
 - Kevin Kiplangat - Initial work
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Safaricom Daraja API for M-Pesa integration
 - Flask and React communities
 - All contributors
 
-## 📞 Support
+## Support
 
 For issues and questions:
 - Check `MPESA_TESTING_GUIDE.md` for M-Pesa issues
