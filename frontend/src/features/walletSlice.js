@@ -9,38 +9,40 @@ export const fetchWalletAnalytics = createAsyncThunk("wallet/analytics", async (
     return await apiFetch("/wallet/analytics");
 });
 
-export const depositMpesa = createAsyncThunk("wallet/depositMpesa", async (data) => {
-    return await apiFetch("/wallet/deposit/mpesa", {
+export const depositMpesa = createAsyncThunk("wallet/depositMpesa", async ({ amount, phone_number }, { rejectWithValue }) => {
+    try {
+        console.log('Initiating M-Pesa deposit:', { amount, phone_number });
+        const response = await apiFetch("/deposit/mpesa", {
+            method: "POST",
+            body: { amount, phone_number },
+        });
+        console.log('M-Pesa deposit response:', response);
+        return response;
+    } catch (error) {
+        console.error('M-Pesa deposit error:', error);
+        return rejectWithValue(error.message);
+    }
+});
+
+export const transferToBeneficiaryWallet = createAsyncThunk("wallet/transferToBeneficiaryWallet", async ({ beneficiary_wallet_id, amount, description }) => {
+    return await apiFetch("/transfer", {
         method: "POST",
-        body: {amount, phone_number},
+        body: { beneficiary_wallet_id, amount, description },
     });
 });
 
-export const transferToBeneficiaryWallet = createAsyncThunk("wallet/transferToBeneficiaryWallet", async (data) => {
-    async ({ beneficiary_wallet_id, amount, description }) => {
-        return await apiFetch("/wallet/transfer/beneficiary", {
-            method: "POST",
-            body: { beneficiary_wallet_id, amount, description },
-        });
-    }
+export const transferToPhone = createAsyncThunk("wallet/transferToPhone", async ({ phone_number, amount, description }) => {
+    return await apiFetch("/transfer", {
+        method: "POST",
+        body: { phone_number, amount, description },
+    });
 });
 
-export const transferToPhone = createAsyncThunk("wallet/transferToPhone", async (data) => {
-    async ({ phone_number, amount, description }) => {
-        return await apiFetch("/wallet/transfer/phone", {
-            method: "POST",
-            body: { phone_number, amount, description },
-        });
-    }
-});
-
-export const withdrawFunds = createAsyncThunk("wallet/withdrawFunds", async (data) => {
-    async ({ amount, payment_method_id}) => {
-        return await apiFetch("/wallet/withdraw", {
-            method: "POST",
-            body: { amount, payment_method_id },
-        });
-    }
+export const withdrawFunds = createAsyncThunk("wallet/withdrawFunds", async ({ amount, payment_method_id }) => {
+    return await apiFetch("/withdraw", {
+        method: "POST",
+        body: { amount, payment_method_id },
+    });
 });
 
 export const fetchTransactionSummary = createAsyncThunk(
@@ -116,7 +118,7 @@ const walletSlice = createSlice({
             })
             .addCase(depositMpesa.rejected, (state, action) => {
                 state.status = "failed";
-                state.error = action.error.message;
+                state.error = action.payload || action.error.message || "Deposit failed";
             })
             .addCase(transferToBeneficiaryWallet.pending, (state) => {
                 state.status = "loading";

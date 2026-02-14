@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearUserMessages, fetchUserProfile, updateUserProfile} from '../features/profileSlice';
-import PageWithLogo from '../components/common/PageWithLogo';
+import { clearUserMessages, fetchUserProfile, updateUserProfile} from '../../features/profileSlice';
 
-export default function UserProfilePage() {
+export default function AdminProfile() {
     const dispatch = useDispatch();
     const { profile, status, error, success } = useSelector((state) => state.user);
 
@@ -44,14 +43,12 @@ export default function UserProfilePage() {
     }
 
     return (
-        <PageWithLogo>
         <div className="mx-auto max-w-6xl px-4 py-6">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-slate-900">User Profile</h1>
+                <h1 className="text-2xl font-bold text-slate-900">Admin Profile</h1>
                 <p className="text-sm text-slate-600">View and update your profile details</p>
             </div>
 
-            {/* Alerts */}
             {error && (
                 <div className="mb-4 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
                     {error}
@@ -69,16 +66,16 @@ export default function UserProfilePage() {
 
                     <div className="space-y-2 text-sm text-slate-700">
                         <div>
-                            <span className= "font-semibold">Username:</span>{" "}
+                            <span className="font-semibold">Username:</span>{" "}
                              {profile?.username ?? "--"}
                         </div>
                         <div>
-                            <span className= "font-semibold">Email:</span>{" "}
+                            <span className="font-semibold">Email:</span>{" "}
                              {profile?.email ?? "--"}
                         </div>
                         <div>
-                            <span className="font-semibold">KYC Status:</span>{" "}
-                            {profile?.kyc_status ??  profile?.kyc?.status ?? "--"}
+                            <span className="font-semibold">Role:</span>{" "}
+                            Administrator
                         </div>
                     </div>
                 </div>
@@ -86,7 +83,7 @@ export default function UserProfilePage() {
                 <div className="rounded-2xl border bg-white p-5 shadow-sm">
                     <h2 className="mb-4 text-lg font-semibold text-slate-700">
                         Edit Profile
-                        </h2>
+                    </h2>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
@@ -133,7 +130,5 @@ export default function UserProfilePage() {
                 </div>
             </div>
         </div>
-        </PageWithLogo>
-
     );
 }

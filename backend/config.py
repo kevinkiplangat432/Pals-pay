@@ -265,6 +265,19 @@ class Config:
         'trusted_ip_expiry_days': 30
     }
     
+    # M-Pesa Configuration
+    MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', '')
+    MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', '')
+    MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE', '174379')
+    MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', '')
+    MPESA_API_URL = os.environ.get('MPESA_API_URL', 'https://sandbox.safaricom.co.ke')
+    MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', '')
+    MPESA_B2C_RESULT_URL = os.environ.get('MPESA_B2C_RESULT_URL', '')
+    MPESA_B2C_TIMEOUT_URL = os.environ.get('MPESA_B2C_TIMEOUT_URL', '')
+    MPESA_INITIATOR_NAME = os.environ.get('MPESA_INITIATOR_NAME', 'testapi')
+    MPESA_SECURITY_CREDENTIAL = os.environ.get('MPESA_SECURITY_CREDENTIAL', '')
+    MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'sandbox')
+    
     COMPLIANCE_CONFIG = {
         'sanctioned_countries': ['IR', 'KP', 'SY', 'CU', 'SD'],
         'high_risk_countries': ['AF', 'IQ', 'LY', 'SO', 'YE'],

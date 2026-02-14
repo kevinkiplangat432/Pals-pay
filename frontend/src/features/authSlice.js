@@ -146,11 +146,19 @@ const authSlice = createSlice({
       })
 
       // Verify OTP
+      .addCase(verifyLoginOTP.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
       .addCase(verifyLoginOTP.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload.user;
         state.otpRequired = false;
         state.otpUserId = null;
+      })
+      .addCase(verifyLoginOTP.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || "Invalid OTP code. Please try again.";
       })
 
       // Fetch Profile

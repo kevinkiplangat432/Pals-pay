@@ -50,7 +50,7 @@ const AdminAnalytics = () => {
             onClick={() => setActiveTab("overview")}
             className={`px-4 py-2 rounded-lg ${
               activeTab === "overview"
-                ? "bg-indigo-600 text-white"
+                ? "bg-green-600 text-white"
                 : "bg-gray-100 text-gray-700"
             }`}
           >
@@ -60,7 +60,7 @@ const AdminAnalytics = () => {
             onClick={() => setActiveTab("profit")}
             className={`px-4 py-2 rounded-lg ${
               activeTab === "profit"
-                ? "bg-indigo-600 text-white"
+                ? "bg-green-600 text-white"
                 : "bg-gray-100 text-gray-700"
             }`}
           >
@@ -70,7 +70,7 @@ const AdminAnalytics = () => {
             onClick={() => setActiveTab("suspicious")}
             className={`px-4 py-2 rounded-lg ${
               activeTab === "suspicious"
-                ? "bg-indigo-600 text-white"
+                ? "bg-green-600 text-white"
                 : "bg-gray-100 text-gray-700"
             }`}
           >
@@ -92,28 +92,28 @@ const AdminAnalytics = () => {
                 <StatsCard
                   title="Total Users"
                   value={formatNumber(systemStats.users?.total || 0)}
-                  icon="👥"
+                  icon="users"
                   color="bg-blue-100"
                   subtitle={`${systemStats.users?.active || 0} active`}
                 />
                 <StatsCard
                   title="Today's Volume"
                   value={formatCurrency(systemStats.transactions?.today_volume || 0)}
-                  icon="💸"
+                  icon="dollar"
                   color="bg-green-100"
                   subtitle={`${systemStats.transactions?.today_count || 0} transactions`}
                 />
                 <StatsCard
                   title="Total Balance"
                   value={formatCurrency(systemStats.wallets?.total_balance || 0)}
-                  icon="💰"
+                  icon="wallet"
                   color="bg-yellow-100"
                   subtitle={`${systemStats.wallets?.total || 0} wallets`}
                 />
                 <StatsCard
                   title="Monthly Fees"
                   value={formatCurrency(systemStats.transactions?.fees_last_30_days || 0)}
-                  icon="📈"
+                  icon="chart"
                   color="bg-purple-100"
                   subtitle="Last 30 days"
                 />

@@ -5,6 +5,7 @@ import {
   fetchKycStatus,
   submitKycDocuments,
 } from "../features/profileSlice";
+import PageWithLogo from "../components/common/PageWithLogo";
 
 export default function KycPage() {
   const dispatch = useDispatch();
@@ -39,6 +40,7 @@ export default function KycPage() {
   }
 
   return (
+    <PageWithLogo>
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-900">KYC Verification</h1>
@@ -111,7 +113,7 @@ export default function KycPage() {
                 value={form.document_type}
                 onChange={handleChange}
                 placeholder="e.g. national_id, passport"
-                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300"
+                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
               />
             </div>
 
@@ -124,7 +126,7 @@ export default function KycPage() {
                 value={form.document_number}
                 onChange={handleChange}
                 placeholder="Document number"
-                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300"
+                className="w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
               />
             </div>
 
@@ -167,7 +169,7 @@ export default function KycPage() {
             <button
               type="submit"
               disabled={status === "loading"}
-              className="w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+              className="w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60"
             >
               {status === "loading" ? "Submitting…" : "Submit KYC"}
             </button>
@@ -175,5 +177,6 @@ export default function KycPage() {
         </div>
       </div>
     </div>
+    </PageWithLogo>
   );
 }

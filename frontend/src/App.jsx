@@ -5,6 +5,9 @@ import Signup from "./pages/Signup";
 import VerifyEmail from "./pages/VerifyEmail";
 import Faq from "./pages/Faqs";
 
+// User Components
+import UserLayout from "./components/user/UserLayout";
+import UserDashboard from "./pages/UserDashboard";
 
 // User Pages
 import WalletPage from "./pages/WalletPage";
@@ -23,6 +26,7 @@ import AdminWallets from "./pages/admin/AdminWallets";
 import AdminTransactions from "./pages/admin/AdminTransactions";
 import AdminKyc from "./pages/admin/AdminKyc";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminProfile from "./pages/admin/AdminProfile";
 
 function App() {
   return (
@@ -32,57 +36,23 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/Faqs" element={<Faq />} />
+      <Route path="/faqs" element={<Faq />} />
 
       {/* User Protected Routes */}
-      <Route
-        path="/wallet"
-        element={
+      <Route element={
           <ProtectedRoute>
-            <WalletPage />
+            <UserLayout />
           </ProtectedRoute>
         }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <UserProfilePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/kyc"
-        element={
-          <ProtectedRoute>
-            <KycPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/payment-methods"
-        element={
-          <ProtectedRoute>
-            <PaymentMethodsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/transactions"
-        element={
-          <ProtectedRoute>
-            <TransactionsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/change-password"
-        element={
-          <ProtectedRoute>
-            <ChangePasswordPage />
-          </ProtectedRoute>
-        }
-      />
+      >
+        <Route path="/dashboard" element={<UserDashboard />} />
+        <Route path="/wallet" element={<WalletPage />} />
+        <Route path="/profile" element={<UserProfilePage />} />
+        <Route path="/kyc" element={<KycPage />} />
+        <Route path="/payment-methods" element={<PaymentMethodsPage />} />
+        <Route path="/transactions" element={<TransactionsPage />} />
+        <Route path="/change-password" element={<ChangePasswordPage />} />
+      </Route>
 
       {/* Admin Protected Routes */}
       <Route
@@ -99,6 +69,7 @@ function App() {
         <Route path="transactions" element={<AdminTransactions />} />
         <Route path="kyc" element={<AdminKyc />} />
         <Route path="analytics" element={<AdminAnalytics />} />
+        <Route path="profile" element={<AdminProfile />} />
         
       </Route>
     </Routes>

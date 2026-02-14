@@ -19,11 +19,12 @@ def create_app(config_name='default'):
     cors.init_app(
         app,
         resources={
-            r"/api/*": {
-                "origins": app.config.get('CORS_ORIGINS', ['http://localhost:5173']),
-                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            r"/*": {
+                "origins": ["http://localhost:5173", "http://localhost:3000"],
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
                 "allow_headers": ["Content-Type", "Authorization"],
-                "supports_credentials": True
+                "supports_credentials": True,
+                "expose_headers": ["Content-Type", "Authorization"]
             }
         }
     )
@@ -46,6 +47,9 @@ def create_app(config_name='default'):
     from .Routes.otp_routes import otp_bp
     from .Routes.payment_routes import payment_bp
     from .Routes.transfer_routes import transfer_bp
+    from .Routes.contact_routes import contact_bp
+    from .Routes.mpesa_routes import mpesa_bp
+    from .Routes.deposit_routes import deposit_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
@@ -55,6 +59,9 @@ def create_app(config_name='default'):
     app.register_blueprint(otp_bp)
     app.register_blueprint(payment_bp)
     app.register_blueprint(transfer_bp)
+    app.register_blueprint(contact_bp)
+    app.register_blueprint(mpesa_bp)
+    app.register_blueprint(deposit_bp)
     
     uploads_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
     os.makedirs(uploads_dir, exist_ok=True)

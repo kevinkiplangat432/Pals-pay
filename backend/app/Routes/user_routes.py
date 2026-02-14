@@ -8,7 +8,7 @@ from ..auth.decorators import token_required , kyc_required, otp_required
 from ..services.kyc_service import KYCService
 from werkzeug.security import generate_password_hash
 
-user_bp = Blueprint('user', __name__, url_prefix='/api/user')
+user_bp = Blueprint('user', __name__, url_prefix='/api/v1/user')
 
 # Phone number regex
 PHONE_REGEX = r'^\+?[1-9]\d{1,14}$'  # E.164 format
@@ -16,15 +16,15 @@ PHONE_REGEX = r'^\+?[1-9]\d{1,14}$'  # E.164 format
 # Get user profile
 @user_bp.route('/profile', methods=['GET'])
 @token_required
-def get_user_profile():
-    user = request.current_user
+def get_user_profile(current_user):
+    user = current_user
     return jsonify(user.to_dict(include_wallet=True, include_kyc=True)), 200
 
 # Update user profile
 @user_bp.route('/profile', methods=['PUT'])
 @token_required
-def update_user_profile():
-    user = request.current_user
+def update_user_profile(current_user):
+    user = current_user
     data = request.get_json()
     
     changes = {}
@@ -67,11 +67,6 @@ def update_user_profile():
             user.date_of_birth = dob
         except (ValueError, AttributeError):
             return jsonify({'message': 'Invalid date format. Use ISO format (YYYY-MM-DD)'}), 400
-    
-    # Update two-factor authentication setting
-    if 'two_factor_enabled' in data:
-        changes['two_factor_enabled'] = user.two_factor_enabled
-        user.two_factor_enabled = bool(data['two_factor_enabled'])
     
     try:
         db.session.commit()
@@ -145,8 +140,8 @@ def change_password(current_user):
 # Get KYC status
 @user_bp.route('/kyc/status', methods=['GET'])
 @token_required
-def get_kyc_status():
-    user = request.current_user
+def get_kyc_status(current_user):
+    user = current_user
     
     kyc = KYCVerification.query.filter_by(user_id=user.id).first()
     
@@ -165,8 +160,8 @@ def get_kyc_status():
 # Submit KYC documents
 @user_bp.route('/kyc/submit', methods=['POST'])
 @token_required
-def submit_kyc():
-    user = request.current_user
+def submit_kyc(current_user):
+    user = current_user
     
     # Check if already verified
     if user.kyc_status == KYCStatus.verified:
@@ -210,8 +205,8 @@ def submit_kyc():
 @user_bp.route('/payment-methods', methods=['GET'])
 @token_required
 @kyc_required
-def get_payment_methods():
-    user = request.current_user
+def get_payment_methods(current_user):
+    user = current_user
     
     payment_methods = PaymentMethod.query.filter_by(
         user_id=user.id,
@@ -226,8 +221,8 @@ def get_payment_methods():
 @user_bp.route('/payment-methods', methods=['POST'])
 @token_required
 @kyc_required
-def add_payment_method():
-    user = request.current_user
+def add_payment_method(current_user):
+    user = current_user
     data = request.get_json()
     
     provider = data.get('provider')
@@ -286,8 +281,8 @@ def add_payment_method():
 # Delete payment method
 @user_bp.route('/payment-methods/<int:payment_method_id>', methods=['DELETE'])
 @token_required
-def delete_payment_method(payment_method_id):
-    user = request.current_user
+def delete_payment_method(current_user, payment_method_id):
+    user = current_user
     
     payment_method = PaymentMethod.query.filter_by(
         id=payment_method_id,
@@ -311,8 +306,8 @@ def delete_payment_method(payment_method_id):
 # Set default payment method
 @user_bp.route('/payment-methods/<int:payment_method_id>/default', methods=['PUT'])
 @token_required
-def set_default_payment_method(payment_method_id):
-    user = request.current_user
+def set_default_payment_method(current_user, payment_method_id):
+    user = current_user
     
     payment_method = PaymentMethod.query.filter_by(
         id=payment_method_id,
@@ -342,8 +337,8 @@ def set_default_payment_method(payment_method_id):
 # Verify payment method (for MPesa - send verification code)
 @user_bp.route('/payment-methods/<int:payment_method_id>/verify', methods=['POST'])
 @token_required
-def verify_payment_method(payment_method_id):
-    user = request.current_user
+def verify_payment_method(current_user, payment_method_id):
+    user = current_user
     
     payment_method = PaymentMethod.query.filter_by(
         id=payment_method_id,
@@ -366,8 +361,8 @@ def verify_payment_method(payment_method_id):
 # Get transaction history
 @user_bp.route('/transactions', methods=['GET'])
 @token_required
-def get_transaction_history():
-    user = request.current_user
+def get_transaction_history(current_user):
+    user = current_user
     
     from app.services.transaction_service import TransactionService
     

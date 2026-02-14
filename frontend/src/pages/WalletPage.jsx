@@ -74,21 +74,20 @@ export default function WalletPage() {
     async function onDeposit(e) {
         e.preventDefault();
         resetMessages();
-    
-
-    const amount = Number(depositForm.amount);
-    const phone_number = depositForm.phone_number.trim();
-
-    if (!amount || amount <= 0) return;
-
-    const res = await dispatch(depositMpesa({ amount, phone_number }));
-    if (depositMpesa.fulfilled.match(res)) {
-        setDepositForm({ amount: "", phone_number: "" });
-        dispatch(fetchWalletSummary());
-        dispatch(fetchTransactionSummary({ days }));
+        
+        const amount = Number(depositForm.amount);
+        const phone_number = depositForm.phone_number.trim();
+        
+        if (!amount || amount <= 0 || !phone_number) return;
+        
+        const res = await dispatch(depositMpesa({ amount, phone_number }));
+        
+        if (depositMpesa.fulfilled.match(res)) {
+            setDepositForm({ amount: "", phone_number: "" });
+            dispatch(fetchWalletSummary());
+            dispatch(fetchTransactionSummary({ days }));
+        }
     }
-}
-
 
     async function onTransferWallet(e) {
         e.preventDefault();
@@ -200,24 +199,43 @@ export default function WalletPage() {
                 <div className='rounded-2xl border bg-white p-5 shadow-sm'>
                     <div className='text-sm font-semibold text-slate-700'>Current Balance</div>
                     <div className='mt-2 text-2xl font-bold text-slate-900'>{balanceText}</div>
-                    
                 </div>
+                
                 <div className='rounded-2xl border bg-white p-5 shadow-sm md:col-span-2'>
                     <div className='text-sm font-semibold text-slate-700'>Wallet Analytics (Last 30 days)</div>
-                    <pre className='mt-3 max-h-56 overflow-auto rounded-xl bg-slate-50 p-3 text-xs text-slate-700'>
-                        {analytics ? JSON.stringify(analytics, null, 2) : "--"}
-                    </pre>
+                    {analytics ? (
+                        <div className='mt-3 grid grid-cols-2 gap-4'>
+                            <div className='rounded-lg bg-slate-50 p-3'>
+                                <div className='text-xs text-slate-600'>Total Deposits</div>
+                                <div className='text-lg font-bold text-green-600'>{analytics.total_deposits || 0} {summary?.currency || 'KES'}</div>
+                            </div>
+                            <div className='rounded-lg bg-slate-50 p-3'>
+                                <div className='text-xs text-slate-600'>Total Withdrawals</div>
+                                <div className='text-lg font-bold text-red-600'>{analytics.total_withdrawals || 0} {summary?.currency || 'KES'}</div>
+                            </div>
+                            <div className='rounded-lg bg-slate-50 p-3'>
+                                <div className='text-xs text-slate-600'>Total Transfers</div>
+                                <div className='text-lg font-bold text-blue-600'>{analytics.total_transfers || 0} {summary?.currency || 'KES'}</div>
+                            </div>
+                            <div className='rounded-lg bg-slate-50 p-3'>
+                                <div className='text-xs text-slate-600'>Transaction Count</div>
+                                <div className='text-lg font-bold text-slate-900'>{analytics.transaction_count || 0}</div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className='mt-3 text-sm text-slate-500'>No analytics data available</div>
+                    )}
+                    
                     <div className='mt-4 text-sm font-semibold text-slate-700'>
                         Transaction Summary
                     </div>
-                    
 
-                    <div className='flex items-center gap-2'>
+                    <div className='flex items-center gap-2 mt-2'>
                         <label className='text-sm text-slate-700'>Days</label>
                         <input
                             value={days}
                             onChange={(e) => setDays(Number(e.target.value || 30))}
-                            className='w-24 rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
+                            className='w-24 rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
                             placeholder='30'
                         />
                         <button
@@ -226,144 +244,159 @@ export default function WalletPage() {
                                 dispatch(fetchTransactionSummary({ days }));
                             }}
                             className='rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50'
-                            >
-                                Load
-                                </button>
+                        >
+                            Load
+                        </button>
+                    </div>
+                    
+                    {transactionSummary ? (
+                        <div className='mt-3 grid grid-cols-2 gap-4'>
+                            <div className='rounded-lg bg-slate-50 p-3'>
+                                <div className='text-xs text-slate-600'>Completed</div>
+                                <div className='text-lg font-bold text-green-600'>{transactionSummary.completed || 0}</div>
+                            </div>
+                            <div className='rounded-lg bg-slate-50 p-3'>
+                                <div className='text-xs text-slate-600'>Pending</div>
+                                <div className='text-lg font-bold text-yellow-600'>{transactionSummary.pending || 0}</div>
+                            </div>
+                            <div className='rounded-lg bg-slate-50 p-3'>
+                                <div className='text-xs text-slate-600'>Failed</div>
+                                <div className='text-lg font-bold text-red-600'>{transactionSummary.failed || 0}</div>
+                            </div>
+                            <div className='rounded-lg bg-slate-50 p-3'>
+                                <div className='text-xs text-slate-600'>Total Amount</div>
+                                <div className='text-lg font-bold text-slate-900'>{transactionSummary.total_amount || 0} {summary?.currency || 'KES'}</div>
                             </div>
                         </div>
-                    <pre className='mt-3 max-h-56 overflow-auto rounded-xl bg-slate-50 p-3 text-xs text-slate-700'>
-                        {transactionSummary ? JSON.stringify(transactionSummary, null, 2) : "--"}
-                    </pre>
-                </div>
-
-                <div className='mt-6 grid gap-6 lg:grid-cols-2'>
-                    <div className='rounded-2xl border bg-white p-5 shadow-sm'>
-                        <h2 className='text-sm font-semibold text-slate-700'>
-                            Deposit via Mpesa
-                        </h2>
-                        
-                        <form onSubmit={onDeposit} className='mt-4 space-y-3'>
-                            <input
-                                value={depositForm.amount}
-                                onChange={(e) => setDepositForm((f) => ({ ...f, amount: e.target.value }))}
-                                placeholder='Amount'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
-                            />
-                            <input
-                                value={depositForm.phone_number}
-                                onChange={(e) => setDepositForm((f) => ({ ...f, phone_number: e.target.value }))}
-                                placeholder='Phone number'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
-                            />
-                            <button
-                                type='submit'
-                                disabled={isLoading}
-                                className='w-full rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50'
-                            >
-                                {isLoading ? "Processing..." : "Deposit"}
-                            </button>
-                        </form>
-                    </div>
-                    <div className='rounded-2xl border bg-white p-5 shadow-sm'>
-                        <h2 className='text-sm font-semibold text-slate-700'>
-                            Withdraw
-                        </h2>
-
-                        <form onSubmit={onWithdraw} className='mt-4 space-y-3'>
-                            <input
-                                value={withdrawForm.amount}
-                                onChange={(e) => setWithdrawForm((f) => ({ ...f, amount: e.target.value }))}
-                                placeholder='Amount'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
-                            />
-                            <input
-                                value={withdrawForm.payment_method_id}
-                                onChange={(e) => setWithdrawForm((f) => ({ ...f, payment_method_id: e.target.value }))}
-                                placeholder='Payment Method ID (verified)'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
-                            />
-                            <button
-                                type='submit'
-                                disabled={isLoading}
-                                className='w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60'
-                            >
-                                {isLoading ? "Processing..." : "Withdraw"}
-                            </button>
-                        </form>
-                        </div>
-
-                        <div className='rounded-2xl border bg-white p-5 shadow-sm'>
-                        <h2 className='text-sm font-semibold text-slate-700'>
-                            Transfer to beneficiary wallet
-                        </h2>
-                        <form onSubmit={onTransferWallet} className='mt-4 space-y-3'>
-                            <input
-                                value={transferWalletForm.beneficiary_wallet_id}
-                                onChange={(e) => setTransferWalletForm((f) => ({ ...f, beneficiary_wallet_id: e.target.value }))}
-                                placeholder='Beneficiary Wallet ID'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
-                            />
-                            <input
-                                value={transferWalletForm.amount}
-                                onChange={(e) => setTransferWalletForm((f) => ({ ...f, amount: e.target.value }))}
-                                placeholder='Amount'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
-                            />
-                            <input
-                                value={transferWalletForm.description}
-                                onChange={(e) => setTransferWalletForm((f) => ({ ...f, description: e.target.value }))}
-                                placeholder='Description (optional)'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
-                            />
-                            <button
-                                type='submit'
-                                disabled={isLoading}
-                                className='w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60'
-                            >
-                                {isLoading ? "Processing..." : " Send Transfer"}
-                            </button>
-                        </form>
-                    </div>
-
-                    <div className='rounded-2xl border bg-white p-5 shadow-sm'>
-                        <h2 className='text-sm font-semibold text-slate-700'>
-                            Transfer to phone number
-                        </h2>
-                        <form onSubmit={onTransferPhone} className='mt-4 space-y-3'>
-                            <input
-                                value={transferPhoneForm.phone_number}
-                                onChange={(e) => setTransferPhoneForm((f) => ({ ...f, phone_number: e.target.value }))}
-                                placeholder='Phone number (+254...)'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
-                            />
-                            <input
-                                value={transferPhoneForm.amount}
-                                onChange={(e) => setTransferPhoneForm((f) => ({ ...f, amount: e.target.value }))}
-                                placeholder='Amount'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
-                            />
-                            <input
-                                value={transferPhoneForm.description}
-                                onChange={(e) => setTransferPhoneForm((f) => ({ ...f, description: e.target.value }))}
-                                placeholder='Description (optional)'
-                                className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-slate-300'
-                            />
-                            <button
-                                type='submit'
-                                disabled={isLoading}
-                                className='w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60'
-                            >
-                                {isLoading ? "Processing..." : " Send Transfer"}
-                            </button>
-                        </form>
-                    </div>
+                    ) : (
+                        <div className='mt-3 text-sm text-slate-500'>No transaction summary available</div>
+                    )}
                 </div>
             </div>
+
+            <div className='mt-6 grid gap-6 lg:grid-cols-2'>
+                <div className='rounded-2xl border bg-white p-5 shadow-sm'>
+                    <h2 className='text-sm font-semibold text-slate-700'>
+                        Deposit via Mpesa
+                    </h2>
+                    
+                    <form onSubmit={onDeposit} className='mt-4 space-y-3'>
+                        <input
+                            value={depositForm.amount}
+                            onChange={(e) => setDepositForm((f) => ({ ...f, amount: e.target.value }))}
+                            placeholder='Amount'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <input
+                            value={depositForm.phone_number}
+                            onChange={(e) => setDepositForm((f) => ({ ...f, phone_number: e.target.value }))}
+                            placeholder='Phone number'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <button
+                            type='submit'
+                            disabled={isLoading}
+                            className='w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700'
+                        >
+                            {isLoading ? "Processing..." : "Deposit"}
+                        </button>
+                    </form>
+                </div>
+
+                <div className='rounded-2xl border bg-white p-5 shadow-sm'>
+                    <h2 className='text-sm font-semibold text-slate-700'>
+                        Withdraw
+                    </h2>
+
+                    <form onSubmit={onWithdraw} className='mt-4 space-y-3'>
+                        <input
+                            value={withdrawForm.amount}
+                            onChange={(e) => setWithdrawForm((f) => ({ ...f, amount: e.target.value }))}
+                            placeholder='Amount'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <input
+                            value={withdrawForm.payment_method_id}
+                            onChange={(e) => setWithdrawForm((f) => ({ ...f, payment_method_id: e.target.value }))}
+                            placeholder='Payment Method ID (verified)'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <button
+                            type='submit'
+                            disabled={isLoading}
+                            className='w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60'
+                        >
+                            {isLoading ? "Processing..." : "Withdraw"}
+                        </button>
+                    </form>
+                </div>
+
+                <div className='rounded-2xl border bg-white p-5 shadow-sm'>
+                    <h2 className='text-sm font-semibold text-slate-700'>
+                        Transfer to beneficiary wallet
+                    </h2>
+                    <form onSubmit={onTransferWallet} className='mt-4 space-y-3'>
+                        <input
+                            value={transferWalletForm.beneficiary_wallet_id}
+                            onChange={(e) => setTransferWalletForm((f) => ({ ...f, beneficiary_wallet_id: e.target.value }))}
+                            placeholder='Beneficiary Wallet ID'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <input
+                            value={transferWalletForm.amount}
+                            onChange={(e) => setTransferWalletForm((f) => ({ ...f, amount: e.target.value }))}
+                            placeholder='Amount'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <input
+                            value={transferWalletForm.description}
+                            onChange={(e) => setTransferWalletForm((f) => ({ ...f, description: e.target.value }))}
+                            placeholder='Description (optional)'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <button
+                            type='submit'
+                            disabled={isLoading}
+                            className='w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60'
+                        >
+                            {isLoading ? "Processing..." : "Send Transfer"}
+                        </button>
+                    </form>
+                </div>
+
+                <div className='rounded-2xl border bg-white p-5 shadow-sm'>
+                    <h2 className='text-sm font-semibold text-slate-700'>
+                        Transfer to phone number
+                    </h2>
+                    <form onSubmit={onTransferPhone} className='mt-4 space-y-3'>
+                        <input
+                            value={transferPhoneForm.phone_number}
+                            onChange={(e) => setTransferPhoneForm((f) => ({ ...f, phone_number: e.target.value }))}
+                            placeholder='Phone number (+254...)'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <input
+                            value={transferPhoneForm.amount}
+                            onChange={(e) => setTransferPhoneForm((f) => ({ ...f, amount: e.target.value }))}
+                            placeholder='Amount'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <input
+                            value={transferPhoneForm.description}
+                            onChange={(e) => setTransferPhoneForm((f) => ({ ...f, description: e.target.value }))}
+                            placeholder='Description (optional)'
+                            className='w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500'
+                        />
+                        <button
+                            type='submit'
+                            disabled={isLoading}
+                            className='w-full rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60'
+                        >
+                            {isLoading ? "Processing..." : "Send Transfer"}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     );
 }
-
-                    
-    
-        
-    
-

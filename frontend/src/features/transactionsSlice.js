@@ -8,7 +8,7 @@ export const fetchTransactions = createAsyncThunk(
         qs.set("page", String(page));
         qs.set("per_page", String(per_page));
         if (type) qs.set("type", type);
-        return await apiFetch(`/api/user/transactions?${qs.toString()}`);
+        return await apiFetch(`/user/transactions?${qs.toString()}`);
     }
 );
 

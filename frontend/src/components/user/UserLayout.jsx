@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import AdminSidebar from './AdminSidebar';
-import AdminHeader from './AdminHeader';
+import UserSidebar from './UserSidebar';
+import UserHeader from './UserHeader';
 
-const AdminLayout = () => {
+const UserLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const toggleSidebar = () => {
@@ -12,10 +12,10 @@ const AdminLayout = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <AdminSidebar isOpen={sidebarOpen} />
+      <UserSidebar isOpen={sidebarOpen} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <AdminHeader toggleSidebar={toggleSidebar} />
+        <UserHeader toggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
         
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
@@ -25,4 +25,4 @@ const AdminLayout = () => {
   );
 };
 
-export default AdminLayout;
+export default UserLayout;
